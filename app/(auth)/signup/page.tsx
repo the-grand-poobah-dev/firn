@@ -1,1 +1,1 @@
-export default function Page() { return <main className="p-6"><h1 className="text-2xl font-semibold">Signup</h1><p className="mt-3 text-sm text-slate-400">Firn scaffold — placeholder screen.</p><p className="mt-6 text-xs text-slate-500">Returns are targets, not guarantees. Capital can be lost.</p></main>; }
+import{AuthFrame}from'@/components/auth/AuthFrame';import{SignupForm}from'@/components/auth/SignupForm';export default function Page(){return <AuthFrame title="Start building your future"><SignupForm/></AuthFrame>}

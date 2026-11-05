@@ -1,0 +1,1 @@
+import type{ReactNode}from'react';import{AppLock}from'@/components/auth/AppLock';export default function OnboardingLayout({children}:{children:ReactNode}){return <>{children}<AppLock/></>}

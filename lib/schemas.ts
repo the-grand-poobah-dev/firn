@@ -1,3 +1,4 @@
 import { z } from 'zod';
-export const emailSchema = z.string().email();
-export const savingsAmountSchema = z.number().finite().min(500);
+export const signupSchema=z.object({fullName:z.string().trim().min(2,'Enter your full name.').max(100),email:z.string().trim().email('Enter a valid email address.'),password:z.string().min(10,'Use at least 10 characters.').max(128),country:z.string().min(2,'Choose your country.'),adult:z.literal('yes',{errorMap:()=>({message:'You must confirm that you are 18 or older.'})}),terms:z.literal('yes',{errorMap:()=>({message:'Please accept the Terms to continue.'})})});
+export const profileSchema=z.object({goals:z.array(z.string()).min(1,'Choose at least one savings goal.'),lockPref:z.enum(['6 months','12 months','Both']),riskLevel:z.number().int().min(1).max(5)});
+export const emailSchema=z.string().email();export const savingsAmountSchema=z.number().finite().min(500);
