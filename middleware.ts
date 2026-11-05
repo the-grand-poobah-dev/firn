@@ -8,7 +8,7 @@ export async function middleware(request:NextRequest){
  const path=request.nextUrl.pathname;
  const url=process.env.NEXT_PUBLIC_SUPABASE_URL;
  const key=process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
- if(!url||!key){
+ let validUrl=false;\n try{if(url){const parsed=new URL(url);validUrl=parsed.protocol==='https:'||parsed.protocol==='http:';}}catch{validUrl=false;}\n if(!url||!key||!validUrl){
   if(path==='/')return NextResponse.redirect(new URL('/welcome',request.url));
   if(guarded.some(p=>path===p||path.startsWith(p+'/')))return NextResponse.redirect(new URL('/welcome',request.url));
   return response;
