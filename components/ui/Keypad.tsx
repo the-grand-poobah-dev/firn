@@ -1,0 +1,1 @@
+'use client';export function Keypad({onKey}:{onKey:(key:string)=>void}){return <div className="grid grid-cols-3 gap-2">{['1','2','3','4','5','6','7','8','9','⌫','0','✓'].map(k=><button key={k} onClick={()=>onKey(k)} className="min-h-14 rounded-2xl bg-card2 text-xl font-medium hover:bg-line">{k}</button>)}</div>}
