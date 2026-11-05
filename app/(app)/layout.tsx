@@ -1,1 +1,1 @@
-export default function AppLayout({ children }: { children: React.ReactNode }) { return <div className="mx-auto min-h-screen max-w-[430px] px-4 py-6">{children}</div>; }
+import type {ReactNode} from 'react';import {AppShell} from '@/components/app/AppShell';export default function AppLayout({children}:{children:ReactNode}){return <AppShell>{children}</AppShell>}
