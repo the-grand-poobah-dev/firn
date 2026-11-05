@@ -1,0 +1,1 @@
+import type {ReactNode} from 'react';export function WarnBox({children,title='Please note'}:{children:ReactNode;title?:string}){return <div role="note" className="rounded-2xl border border-warm/30 bg-warm/10 p-3 text-sm"><div className="mb-1 font-semibold text-warm">{title}</div><div className="text-fg">{children}</div></div>}
