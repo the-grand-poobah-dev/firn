@@ -1,10 +1,23 @@
 import type { Metadata } from 'next';
-import { Schibsted_Grotesk, DM_Mono } from 'next/font/google';
+import localFont from 'next/font/local';
 import './globals.css';
-const ui = Schibsted_Grotesk({ subsets:['latin'], weight:['400','500','600','700','800'], variable:'--font-ui', display:'swap' });
-const mono = DM_Mono({ subsets:['latin'], weight:['400','500'], variable:'--font-mono', display:'swap' });
+
+const ui = localFont({
+  src: '../node_modules/@fontsource-variable/schibsted-grotesk/files/schibsted-grotesk-latin-wght-normal.woff2',
+  weight: '400 900',
+  variable: '--font-ui',
+  display: 'swap',
+});
+const mono = localFont({
+  src: [
+    { path: '../node_modules/@fontsource/dm-mono/files/dm-mono-latin-400-normal.woff2', weight: '400' },
+    { path: '../node_modules/@fontsource/dm-mono/files/dm-mono-latin-500-normal.woff2', weight: '500' },
+  ],
+  variable: '--font-mono',
+  display: 'swap',
+});
 export const metadata: Metadata = { title: 'Firn', description: 'Savings simulation. Targets are not guarantees.' };
 const themeScript = `(function(){try{var t=localStorage.getItem('firn-theme');if(t==='dark'||t==='light'){document.documentElement.setAttribute('data-theme',t)}else{document.documentElement.removeAttribute('data-theme')}}catch(e){}})()`;
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
- return <html lang="en" suppressHydrationWarning><head><script dangerouslySetInnerHTML={{__html:themeScript}} /></head><body className={`${ui.variable} ${mono.variable}`}>{children}</body></html>;
+  return <html lang="en" suppressHydrationWarning><head><script dangerouslySetInnerHTML={{__html:themeScript}} /></head><body className={`${ui.variable} ${mono.variable}`}>{children}</body></html>;
 }
