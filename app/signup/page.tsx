@@ -1,1 +1,0 @@
-import{AuthFrame}from'@/components/auth/AuthFrame';import{SignupForm}from'@/components/auth/SignupForm';export default function Page(){return <AuthFrame title="Start building your future"><SignupForm/></AuthFrame>}
