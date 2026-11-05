@@ -1,0 +1,1 @@
+import{AuthFrame}from'@/components/auth/AuthFrame';import{PasscodeSetup}from'@/components/auth/PasscodeSetup';import{requireUser}from'@/lib/auth';export default async function Page(){await requireUser();return <AuthFrame title="Set your app lock"><PasscodeSetup/></AuthFrame>}
