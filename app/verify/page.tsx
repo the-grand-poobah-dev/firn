@@ -1,1 +1,0 @@
-import{Suspense}from'react';import{AuthFrame}from'@/components/auth/AuthFrame';import{VerifyForm}from'@/components/auth/VerifyForm';export default function Page(){return <AuthFrame title="Check your inbox"><Suspense fallback={<p>Loading…</p>}><VerifyForm/></Suspense></AuthFrame>}
