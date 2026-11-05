@@ -1,0 +1,1 @@
+import type {ReactNode} from 'react';export function ChipGroup({children,label}:{children:ReactNode;label?:string}){return <div role="group" aria-label={label} className="flex flex-wrap gap-2">{children}</div>}
