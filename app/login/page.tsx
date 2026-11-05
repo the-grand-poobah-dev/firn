@@ -1,0 +1,1 @@
+import{AuthFrame}from'@/components/auth/AuthFrame';import{LoginForm}from'@/components/auth/LoginForm';export default function Page(){return <AuthFrame title="Welcome back"><LoginForm/></AuthFrame>}
