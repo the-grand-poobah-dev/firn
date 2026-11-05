@@ -1,0 +1,1 @@
+import type {ReactNode} from 'react';export function Badge({tone='positive',children}:{tone?:'positive'|'warm';children:ReactNode}){return <span className={`inline-flex rounded-full px-2 py-1 text-[10px] font-semibold ${tone==='positive'?'bg-pos/15 text-pos':'bg-warm/15 text-warm'}`}>{children}</span>}
