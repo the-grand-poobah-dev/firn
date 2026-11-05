@@ -1,0 +1,1 @@
+export function Stat({label,value,tone='default'}:{label:string;value:string;tone?:'default'|'positive'|'negative'|'warm'}){return <div><div className="label mb-2">{label}</div><div className={`text-xl font-semibold tracking-tight tabular ${tone==='positive'?'text-pos':tone==='negative'?'text-neg':tone==='warm'?'text-warm':'text-fg'}`}>{value}</div></div>}

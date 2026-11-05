@@ -1,0 +1,1 @@
+import {notFound} from 'next/navigation';import DesignShowcase from '@/components/design/DesignShowcase';export default function DesignPage(){if(process.env.VERCEL_ENV==='production')notFound();return <DesignShowcase/>}

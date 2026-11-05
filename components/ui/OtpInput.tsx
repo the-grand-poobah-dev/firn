@@ -1,0 +1,13 @@
+'use client';
+import { useRef } from 'react';
+export function OtpInput({value,onChange}:{value:string;onChange:(v:string)=>void}){
+ const refs=useRef<Array<HTMLInputElement|null>>([]);
+ return <div className="flex justify-between gap-2" role="group" aria-label="One-time passcode">
+  {Array.from({length:6},(_,i)=>
+   <input key={i} ref={el=>{refs.current[i]=el}} aria-label={`Digit ${i+1}`} inputMode="numeric" autoComplete={i===0?'one-time-code':'off'} maxLength={1} value={value[i]??''}
+    onChange={e=>{const v=e.target.value.replace(/\D/g,'').slice(-1);const next=value.split('');next[i]=v;onChange(next.join('').slice(0,6));if(v)refs.current[i+1]?.focus()}}
+    onKeyDown={e=>{if(e.key==='Backspace'&&!value[i])refs.current[i-1]?.focus()}}
+    className="h-12 min-w-0 flex-1 rounded-xl border border-line bg-card2 text-center text-lg tabular focus:border-accent"/>
+  )}
+ </div>;
+}
