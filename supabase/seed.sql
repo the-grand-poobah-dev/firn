@@ -1,0 +1,1 @@
+-- Property seed data will be added in the portfolio implementation task.
