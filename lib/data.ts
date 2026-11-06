@@ -115,10 +115,13 @@ export async function getPortfolio(): Promise<PortfolioResult> {
       .in('position_id', positionIds);
     if (allocationError) throw allocationError;
 
-    type AllocationRow = NonNullable<typeof allocations>[number];
-    const grouped = new Map<string, { property: NonNullable<AllocationRow['properties']>; amount: number }>();
-    for (const allocation of allocations ?? []) {
-      const property = allocation.properties;
+    type AllocationProperty = { id: string; name: string; slug: string; city: string; country: string; target_return: number; lat: number | null; lng: number | null; art: string };
+    type AllocationRow = { property_id: string; amount: number; properties: AllocationProperty | AllocationProperty[] | null };
+    const allocationRows = (allocations ?? []) as unknown as AllocationRow[];
+    const grouped = new Map<string, { property: AllocationProperty; amount: number }>();
+    for (const allocation of allocationRows) {
+      const relation = allocation.properties;
+      const property = Array.isArray(relation) ? relation[0] : relation;
       if (!property) continue;
       const current = grouped.get(allocation.property_id) ?? { property, amount: 0 };
       current.amount += number(allocation.amount);
