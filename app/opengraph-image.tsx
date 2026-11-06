@@ -1,0 +1,26 @@
+import { ImageResponse } from 'next/og';
+
+export const runtime = 'edge';
+export const alt = 'Firn — simulated savings experience';
+export const size = { width: 1200, height: 630 };
+export const contentType = 'image/png';
+
+export default function OpenGraphImage() {
+  return new ImageResponse(
+    <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', padding: 76, background: '#08141D', color: '#EAF3F6', fontFamily: 'Arial, sans-serif' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 22 }}>
+        <div style={{ width: 72, height: 72, borderRadius: 22, border: '3px solid #6FD3E6', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#6FD3E6', fontSize: 48 }}>✳</div>
+        <div style={{ fontSize: 58, fontWeight: 700, letterSpacing: 8 }}>FIRN</div>
+      </div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+        <div style={{ fontSize: 64, fontWeight: 600, letterSpacing: -2 }}>A clearer view of saving.</div>
+        <div style={{ fontSize: 26, color: '#8AA2AF' }}>Explore plans, track growth, understand the details.</div>
+      </div>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div style={{ color: '#F0B27A', border: '1px solid #F0B27A', borderRadius: 999, padding: '12px 22px', fontSize: 20, letterSpacing: 4 }}>SIMULATED</div>
+        <div style={{ color: '#8AA2AF', fontSize: 20 }}>Targets are not guarantees. Capital can be lost.</div>
+      </div>
+    </div>,
+    size,
+  );
+}
