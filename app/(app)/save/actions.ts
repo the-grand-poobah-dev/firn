@@ -1,0 +1,2 @@
+'use server';import {revalidatePath} from 'next/cache';import {createPosition} from '@/lib/positions';
+export async function createPositionAction(input:{plan:'six'|'twelve';amount:number;idempotencyKey:string}){try{const id=await createPosition(input);revalidatePath('/home');revalidatePath('/savings');return {ok:true as const,id};}catch(error){return {ok:false as const,error:error instanceof Error?error.message:'Unable to create your savings position.'};}}
