@@ -1,4 +1,4 @@
-import { useId } from 'react';
+import { useId, type ReactNode } from 'react';
 import { Logo as FirnLogo } from '@/components/ui/Logo';
 
 export type PropertyArtKind = 'tower' | 'villa' | 'marbella' | 'office' | 'palm' | 'lisbon' | 'zurich' | 'mallorca';
@@ -24,7 +24,7 @@ export function PropertyArt({ kind, seed = 1, className }: Props) {
     const x = 18 + i * 35 + pick(-4, 4), h = pick(40, 67);
     return <g key={i}><path d={\`M\${x} 170 L\${x} \${170-h} Q\${x-10} \${170-h+17} \${x} \${170-h-2} Q\${x+10} \${170-h+17} \${x} 170\`} fill="#345C46"/><path d={\`M\${x} 170v-8\`} stroke="#8A684A" strokeWidth="2"/></g>;
   });
-  let scene: React.ReactNode;
+  let scene: ReactNode;
   switch (kind) {
     case 'villa':
       scene = <><defs><linearGradient id={id+'sky'} x2="0" y2="1"><stop stopColor="#B8D9E5"/><stop offset="1" stopColor="#F6E4C7"/></linearGradient></defs><rect width="320" height="200" fill={\`url(#\${id}sky)\`}/><circle cx="260" cy="38" r="19" fill="#F9D69A" opacity=".8"/><path d="M0 128Q55 88 112 124T220 116T320 126V200H0Z" fill="#A2B38A"/><path d="M0 151Q65 116 132 148T260 141T320 146V200H0Z" fill="#718D69"/>{trees}<path d="M83 155V104L124 77L178 104V155Z" fill="#D8C5A3"/><path d="M76 106L126 72L185 106L178 112L126 83L83 113Z" fill="#B96549"/><rect x="102" y="117" width="14" height="24" rx="7" fill="#755A47"/><rect x="137" y="117" width="14" height="24" rx="7" fill="#755A47"/><rect x="166" y="110" width="24" height="45" fill="#CDB895"/><path d="M163 111L178 92L193 111Z" fill="#B96549"/><rect x="171" y="121" width="7" height="10" rx="3.5" fill="#536B70"/><rect y="169" width="320" height="31" fill="#657B5D"/></>;
@@ -51,7 +51,7 @@ export function PropertyArt({ kind, seed = 1, className }: Props) {
     default:
       scene = <><defs><linearGradient id={id+'sky'} y2="1"><stop stopColor="#162B49"/><stop offset=".64" stopColor="#8D7180"/><stop offset="1" stopColor="#F1B38F"/></linearGradient></defs><rect width="320" height="200" fill={\`url(#\${id}sky)\`}/><circle cx="250" cy="65" r="23" fill="#F5C18E" opacity=".9"/>{bgTowers}<path d="M128 165V43L150 25L174 43V165Z" fill="#263D56"/><path d="M128 43L150 25L174 43L169 48L150 34L133 48Z" fill="#D8B46C"/><path d="M150 25V9" stroke="#E8C77B" strokeWidth="2"/><path d="M138 165V53L150 42L164 53V165Z" fill="#38536B"/>{windows(137,54,4,12,'#FFD89B')}<path d="M0 165H320V200H0Z" fill="#102C43"/>{Array.from({length:14},(_,i)=><path key={i} d={\`M\${i*25-5} \${177+(i%3)*5}q12 -3 24 0\`} stroke="#D79E84" strokeWidth="1.4" opacity=".6" fill="none"/> )}</>;
   }
-  return <svg viewBox="0 0 320 200" preserveAspectRatio="xMidYMid slice" className={className ?? 'h-full w-full'} aria-hidden="true" focusable="false">{scene}</svg>;
+  const glintX = pick(18, 290), glintY = pick(18, 78), glintWidth = pick(9, 28);\n  return <svg viewBox="0 0 320 200" preserveAspectRatio="xMidYMid slice" className={className ?? 'h-full w-full'} aria-hidden="true" focusable="false">{scene}<path d={`M${glintX} ${glintY}h${glintWidth}`} stroke="#FFF8E8" strokeWidth="1.4" opacity=".2"/></svg>;
 }
 
 export function Ridge() {

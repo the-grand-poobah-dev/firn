@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { PropertyArt } from '@/components/art/PropertyArt';
-import { artKind, artSeed, type PropertyRecord } from '@/lib/properties';
+import { artKind, artSeed, type PropertyRecord } from '@/lib/property-utils';
 import { usd, pct } from '@/lib/format';
 export function CompareSelector({ properties, initial }: { properties: PropertyRecord[]; initial: string[] }) {
   const router=useRouter();

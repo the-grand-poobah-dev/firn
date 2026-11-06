@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { PropertyArt } from '@/components/art/PropertyArt';
 import { Progress } from '@/components/ui/Progress';
 import { usd, pct } from '@/lib/format';
-import { artKind, artSeed, type PropertyRecord } from '@/lib/properties';
+import { artKind, artSeed, type PropertyRecord } from '@/lib/property-utils';
 export function PropertyCard({ property }: { property: PropertyRecord }) {
   const raised = property.target_raise > 0 ? property.raised / property.target_raise * 100 : 0;
   return <Link href={\`/properties/\${property.slug}\`} className="block w-[min(82vw,310px)] shrink-0 overflow-hidden rounded-[24px] border border-line bg-card transition-transform active:scale-[.985]">
