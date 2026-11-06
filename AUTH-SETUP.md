@@ -7,9 +7,13 @@ The app uses Supabase Auth with cookie-backed SSR sessions via `@supabase/ssr`.
 In Supabase Dashboard → Authentication → URL Configuration:
 
 - Enable email confirmations under Authentication → Providers → Email.
-- Set Site URL to `https://firn-the-grand-poobah-dev.vercel.app`.
-- Add `https://*.vercel.app/**` to Additional Redirect URLs (or the equivalent wildcard pattern accepted by the dashboard).
-- If you use the alternate production alias, add `https://firn-topaz.vercel.app/**` too.
+- Set Site URL to `https://firn-topaz.vercel.app`.
+- Add these Additional Redirect URLs:
+  - `https://firn-topaz.vercel.app/**`
+  - `https://*.vercel.app/**`
+  - `http://localhost:3000/**`
+
+For Vercel Preview deployments, the app uses the request origin as the callback origin. Keep the wildcard redirect pattern enabled.
 
 ## Email templates
 
@@ -24,6 +28,6 @@ For Magic Link / email OTP sign-in, use the same `token_hash` callback pattern a
 
 The app supports both the manual six-digit verification flow and the token-hash callback route.
 
-## Vercel
+## Vercel environment
 
-Set `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` (or `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`) for Preview and Production. Do not add a service-role key to browser-exposed variables.
+Set `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` (or `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`) for Preview and Production. Keep `SUPABASE_SERVICE_ROLE_KEY` server-only and never prefix it with `NEXT_PUBLIC_`.
