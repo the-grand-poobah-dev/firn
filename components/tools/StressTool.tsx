@@ -51,7 +51,7 @@ export function StressTool() {
         </div>
         <p className="mt-3 text-xs text-muted">
           Vacancy ranges from 5% to 35% in 5-point steps. Rent and valuation changes are held at 0%.
-          The dashed line marks the plan's 10% lower target range, not a guaranteed minimum.
+          The dashed line marks the plan&apos;s 10% lower target range, not a guaranteed minimum.
         </p>
       </Card>
       <Card>
