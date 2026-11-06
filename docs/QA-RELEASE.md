@@ -19,7 +19,7 @@ This is an evidence-based status report for the release branch. A database SQL t
 | 375px, 430px, 1280px without horizontal scroll | NOT RUN | Root-level overflow clipping was added, but viewport testing was not run. |
 | Dark/light themes readable with no flash | PARTIAL | Theme preference is applied in a pre-hydration head script; visual browser verification was not run. |
 | Every screen shows SIMULATED; no guaranteed-return copy | PARTIAL | A persistent global SIMULATED marker was added. A complete rendered-screen and copy audit was not available. |
-| No secrets in repository/history | NOT VERIFIED | `.env.example` contains blank placeholders and the admin client is marked `server-only`. Full historical secret scanning was not available through the connected GitHub API. |
+| No secrets in repository/history | PARTIAL | GitHub commit-history queries for `.env`, `.env.local`, and `.env.production` returned no commits; `.env.example` contains blank placeholders. A full token-pattern scan across all historical source commits was not available. |
 | Service-role key absent from client bundle | PARTIAL | Source keeps the key in `lib/supabase/admin.ts` with `import 'server-only'`; a production bundle inspection could not be run. |
 
 ## Database checks
