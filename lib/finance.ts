@@ -9,6 +9,10 @@ export const MIN_AMOUNT = 500;
 export const EARLY_EXIT_FEE = 0.015;
 export const EARLY_EXIT_MIN_DAYS = 90;
 
+export function hasSufficientWalletBalance(amount: number, balance: number): boolean {
+  return Number.isFinite(amount) && Number.isFinite(balance) && amount >= MIN_AMOUNT && amount <= balance;
+}
+
 export function dailyRate(apy: number): number { return Math.pow(1 + apy, 1 / 365) - 1; }
 export function growth(principal: number, apy: number, days: number): number { return principal * Math.pow(1 + apy, days / 365); }
 export function periodReturn(apy: number, years: number): number { return Math.pow(1 + apy, years) - 1; }
