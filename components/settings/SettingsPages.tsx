@@ -33,7 +33,7 @@ export function SettingsPages({section,profile}:Props){
  }
  async function startTotp(){setStatus('');try{const sb=createClient();const {data,error}=await sb.auth.mfa.enroll({factorType:'totp',friendlyName:'Firn authenticator'});if(error)throw error;setTotp({id:data.id,qr:data.totp.qr_code,secret:data.totp.secret});}catch(e){setStatus(e instanceof Error?e.message:'Could not start authenticator setup.')}}
  async function verifyTotp(){if(!totp)return;try{const sb=createClient();const {data,error}=await sb.auth.mfa.challenge({factorId:totp.id});if(error)throw error;const {error:verifyError}=await sb.auth.mfa.verify({factorId:totp.id,challengeId:data.id,code});if(verifyError)throw verifyError;setStatus('Authenticator verified.');setTotp(null);setCode('');await loadFactors();}catch(e){setStatus(e instanceof Error?e.message:'Could not verify code.')}}
- async function loadFactors(){const sb=createClient();const {data,error}=await sb.auth.mfa.listFactors();if(error)throw error;setFactors(data.totp.map(f=>({id:f.id,friendly_name:f.friendly_name,status:f.status})))}
+ async function loadFactors(){const sb=createClient();const {data,error}=await sb.auth.mfa.listFactors();if(error)throw error;setFactors(data.totp.map(f=>({id:f.id,friendly_name:f.friendly_name??'Authenticator',status:f.status})))}
  async function removeFactor(id:string){try{const sb=createClient();const {error}=await sb.auth.mfa.unenroll({factorId:id});if(error)throw error;await loadFactors();setStatus('Authenticator removed.')}catch(e){setStatus(e instanceof Error?e.message:'Could not remove authenticator.')}}
  const filtered=useMemo(()=>helpItems.filter(([q,a])=>(q+' '+a).toLowerCase().includes(search.toLowerCase())),[search]);
  const referral=profile.referral_code??'Not available';
