@@ -2,12 +2,12 @@
 create table if not exists public.position_requests(user_id uuid not null references auth.users(id) on delete cascade,idempotency_key text not null,position_id uuid not null references public.positions(id) on delete cascade,created_at timestamptz not null default now(),primary key(user_id,idempotency_key));
 alter table public.position_requests enable row level security;
 revoke all on public.position_requests from anon,authenticated;
-create or replace function public.create_position_idempotent(p_plan public.plan_code,p_amount numeric,p_key text) returns uuid language plpgsql security definer set search_path=public as $function$
+create or replace function public.create_position_idempotent(p_plan public.plan_code,p_amount numeric,p_key text) returns uuid language plpgsql security definer set search_path='' as $function$
 declare v_user uuid:=auth.uid();v_position uuid;
 begin
  if v_user is null then raise exception 'Not signed in';end if;
  if p_key is null or length(p_key)<8 or length(p_key)>128 then raise exception 'Invalid idempotency key';end if;
- perform pg_advisory_xact_lock(hashtextextended(v_user::text||':'||p_key,0));
+ perform pg_catalog.pg_advisory_xact_lock(pg_catalog.hashtextextended(v_user::text||':'||p_key,0));
  select position_id into v_position from public.position_requests where user_id=v_user and idempotency_key=p_key and created_at>=now()-interval '60 seconds';
  if v_position is not null then return v_position;end if;
  v_position:=public.create_position(p_plan,p_amount);
