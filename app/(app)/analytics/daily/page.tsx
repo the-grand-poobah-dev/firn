@@ -1,0 +1,1 @@
+import {AnalyticsView} from '@/components/analytics/AnalyticsView';import {getAnalytics} from '@/lib/analytics-data';export const dynamic='force-dynamic';export default async function Page(){return <AnalyticsView data={await getAnalytics('30d')} screen="daily"/>}
