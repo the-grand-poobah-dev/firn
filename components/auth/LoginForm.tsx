@@ -6,6 +6,7 @@ import {getOnboardingPathAction,signInCodeAction,signInDemoAction,signInPassword
 import {createClient} from '@/lib/supabase/client';
 import {OtpInput} from '@/components/ui/OtpInput';
 import {Button} from '@/components/ui/Button';
+import {SocialAuthButtons} from '@/components/auth/SocialAuthButtons';
 
 export function LoginForm(){
   const[email,E]=useState('');const[password,P]=useState('');const[code,C]=useState('');const[codeSent,S]=useState(false);
