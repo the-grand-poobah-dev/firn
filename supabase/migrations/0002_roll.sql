@@ -3,6 +3,9 @@
 alter table public.positions drop constraint if exists positions_auto_roll_check;
 alter table public.positions add constraint positions_auto_roll_check
   check (auto_roll in ('ask','renew','withdraw','renew_twelve'));
+alter table public.positions drop constraint if exists positions_renew_twelve_plan_check;
+alter table public.positions add constraint positions_renew_twelve_plan_check
+  check (auto_roll <> 'renew_twelve' or plan = 'six');
 
 drop policy if exists own_positions_update on public.positions;
 create policy own_positions_update on public.positions
