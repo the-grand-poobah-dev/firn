@@ -24,6 +24,7 @@ describe('finance calculations', () => {
   it('calculates principal-weighted blended APY', () => expect(blendedApy([{ principal: 10000, apy: 0.13 }, { principal: 5000, apy: 0.105 }])).toBeCloseTo(0.1216666667, 4));
   it('enforces early exit minimum and fee', () => {
     expect(earlyExit({ principal: 1000, accrued: 50, daysIn: 89 }).allowed).toBe(false);
+    expect(earlyExit({ principal: 1000, accrued: 50, daysIn: 90 }).allowed).toBe(true);
     expect(earlyExit({ principal: 1000, accrued: 50, daysIn: 90 }).receive).toBeCloseTo(985, 8);
   });
   it('returns plan APY at base vacancy assumptions', () => {
