@@ -24,7 +24,10 @@ export default async function HomePage() {
     supabase.from('notifications').select('id', { count: 'exact', head: true }).eq('user_id', user.id).eq('read', false),
   ]);
   if (!profile) redirect('/profile');
-  if (profile.kyc_status !== 'verified') redirect('/profile');
+  if (profile.kyc_status !== 'verified') {
+    const prefs = (profile.prefs ?? {}) as Record<string, unknown>;
+    redirect(profile.kyc_status === 'in_review' || prefs.onboarding_profile_complete === true ? '/kyc' : '/profile');
+  }
   const name = profile.full_name?.trim() || user.email?.split('@')[0] || 'Investor';
   const hasSavings = portfolio.positions.length > 0;
   const todayRate = portfolio.totals.value > 0 ? portfolio.totals.todayProfit / portfolio.totals.value : 0;
