@@ -45,9 +45,6 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       <head><script dangerouslySetInnerHTML={{ __html: themeScript }} /></head>
       <body className={`${ui.variable} ${mono.variable}`}>
         {children}
-        <div aria-label="SIMULATED" className="pointer-events-none fixed bottom-2 left-2 z-[100] rounded-full border border-warm/50 bg-card/95 px-2.5 py-1 font-mono text-[9px] font-semibold tracking-[0.16em] text-warm shadow-lg">
-          SIMULATED
-        </div>
       </body>
     </html>
   );
