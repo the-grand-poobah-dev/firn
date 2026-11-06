@@ -6,8 +6,8 @@ import {saveKycDetailsAction} from '@/app/auth/actions';
 const countryCodes=[['Kenya','+254'],['Uganda','+256'],['Tanzania','+255'],['Rwanda','+250'],['Nigeria','+234'],['Ghana','+233'],['South Africa','+27'],['United Kingdom','+44'],['United States','+1'],['United Arab Emirates','+971'],['Italy','+39'],['Spain','+34'],['Portugal','+351'],['Switzerland','+41']];
 const countries=['Kenya','Uganda','Tanzania','Rwanda','Nigeria','Ghana','South Africa','United Kingdom','United States','United Arab Emirates','Italy','Spain','Portugal','Switzerland','Canada','Australia','Germany','France','Netherlands','Singapore','Japan','Other'];
 const sources=['Employment income','Business income','Savings','Investment proceeds','Rental income','Pension or retirement income','Family support or gift','Sale of assets','Other'];
-export function KycChecklist({pending=false}:{pending?:boolean}){
- const[code,setCode]=useState('+254'),[phone,setPhone]=useState(''),[file,setFile]=useState<File|null>(null),[path,setPath]=useState(''),[city,setCity]=useState(''),[country,setCountry]=useState('Kenya'),[source,setSource]=useState(''),[busy,setBusy]=useState(false),[error,setError]=useState(''),[submitted,setSubmitted]=useState(pending);
+export function KycChecklist({pending=false,initialCountry='Kenya'}:{pending?:boolean;initialCountry?:string}){
+ const[code,setCode]=useState(countryCodes.find(x=>x[0]===initialCountry)?.[1]??'+254'),[phone,setPhone]=useState(''),[file,setFile]=useState<File|null>(null),[path,setPath]=useState(''),[city,setCity]=useState(''),[country,setCountry]=useState(initialCountry),[source,setSource]=useState(''),[busy,setBusy]=useState(false),[error,setError]=useState(''),[submitted,setSubmitted]=useState(pending);
  async function upload(){
   if(!file){setError('Choose an ID document first.');return}
   if(!['image/jpeg','image/png','application/pdf'].includes(file.type)){setError('Upload a JPG, PNG or PDF document.');return}
