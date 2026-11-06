@@ -15,7 +15,7 @@ export default async function MaturityPage() {
   return <div className="space-y-5">
     <TopBar title="Maturity timeline" backHref="/savings"/>
     <p className="text-sm leading-6 text-muted">Track when each active savings position reaches its planned maturity date.</p>
-    <div className="space-y-3">{positions.map((position,index)=><Card key={position.id} className="relative overflow-hidden">
+    <div className="space-y-3">{positions.map(position=><Card key={position.id} className="relative overflow-hidden">
       <div className="absolute bottom-0 left-0 top-0 w-1 bg-accent"/>
       <div className="flex items-start justify-between gap-3 pl-2">
         <div><p className="text-sm font-semibold">{position.plan==='six'?'Firn Six':'Firn Twelve'}</p><p className="mt-1 text-xs text-muted">Matures {longDate(position.maturesOn)}</p></div>
