@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title">
+  <title id="title">Firn</title>
+  <rect width="512" height="512" rx="112" fill="#08141D"/>
+  <path d="M256 92 282 188 378 162 306 232 402 258 306 284 378 354 282 328 256 424 230 328 134 354 206 284 110 258 206 232 134 162 230 188Z" fill="none" stroke="#6FD3E6" stroke-width="18" stroke-linejoin="round"/>
+  <circle cx="256" cy="258" r="34" fill="#6FD3E6"/>
+</svg>
