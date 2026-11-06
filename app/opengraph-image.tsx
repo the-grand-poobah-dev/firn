@@ -20,8 +20,7 @@ export default function OpenGraphImage() {
         <div style={{ fontSize: 64, fontWeight: 600, letterSpacing: -2 }}>A clearer view of saving.</div>
         <div style={{ fontSize: 26, color: '#8AA2AF' }}>Explore plans, track growth, understand the details.</div>
       </div>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <div style={{ color: '#F0B27A', border: '1px solid #F0B27A', borderRadius: 999, padding: '12px 22px', fontSize: 20, letterSpacing: 4 }}>SIMULATED</div>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
         <div style={{ color: '#8AA2AF', fontSize: 20 }}>Targets are not guarantees. Capital can be lost.</div>
       </div>
     </div>,
