@@ -6,7 +6,7 @@ export const emailSchema=z.string().email();
 export const savingsAmountSchema=z.number().finite().min(500);
 
 export const PlanCodeSchema = z.enum(['six', 'twelve']);
-export const CreatePositionInput = z.object({ plan: PlanCodeSchema, amount: z.number().finite().min(500).max(100000) });
+export const CreatePositionInput = z.object({ plan: PlanCodeSchema, amount: z.number().finite().min(500).max(100000).refine(value => Math.abs(value * 100 - Math.round(value * 100)) < 1e-7, 'Use no more than two decimal places.') });
 export const DepositInput = z.object({ amount: z.number().finite().positive().max(100000), method: z.enum(['mpesa', 'card', 'bank']) });
 export const WithdrawInput = z.object({ amount: z.number().finite().positive() });
 export const AutoRollInput = z.object({ auto_roll: z.enum(['ask', 'renew', 'withdraw']) });
