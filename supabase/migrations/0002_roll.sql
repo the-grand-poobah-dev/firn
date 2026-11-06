@@ -10,8 +10,8 @@ alter table public.positions add constraint positions_renew_twelve_plan_check
 drop policy if exists own_positions_update on public.positions;
 create policy own_positions_update on public.positions
   for update to authenticated
-  using (user_id = (select auth.uid()))
-  with check (user_id = (select auth.uid()));
+  using (user_id = (select auth.uid()) and status = 'active')
+  with check (user_id = (select auth.uid()) and status = 'active');
 
 -- Column-level privilege: authenticated clients may update auto_roll only.
 revoke update on public.positions from authenticated;
