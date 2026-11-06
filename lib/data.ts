@@ -32,6 +32,7 @@ export type PropertyShare = {
   lat: number | null;
   lng: number | null;
   art: string;
+  profitWeight: number;
 };
 
 export type PortfolioResult = {
@@ -135,8 +136,7 @@ export async function getPortfolio(): Promise<PortfolioResult> {
       lat: row.property.lat === null ? null : number(row.property.lat),
       lng: row.property.lng === null ? null : number(row.property.lng),
       art: row.property.art,
-      // A normalized weight is retained for the Today screen's profit split.
-      ...({ profitWeight: weights[index] } as Record<string, number>),
+      profitWeight: weights[index],
     })) as PropertyShare[];
   }
 
@@ -161,7 +161,6 @@ export async function getProperties(): Promise<PropertyRow[]> {
   if (authError || !user) throw new Error('You must be signed in to view properties.');
   const { data, error } = await supabase.from('properties')
     .select('*')
-    .eq('is_active', true)
     .order('sort', { ascending: true });
   if (error) throw error;
   return data ?? [];
