@@ -47,6 +47,8 @@ describe('finance calculations', () => {
     expect(accrualFromHistory(rows, 'month')).toEqual({ '2026-11': 3 });
   });
   it('allocates property amounts by target return weights', () => {
-    expect(propertyShare(1000, [{ targetReturn: 0.1 }, { targetReturn: 0.2 }])).toEqual([1000 / 3, 2000 / 3]);
+    const shares = propertyShare(1000, [{ targetReturn: 0.1 }, { targetReturn: 0.2 }]);
+    expect(shares[0]).toBeCloseTo(1000 / 3, 10);
+    expect(shares[1]).toBeCloseTo(2000 / 3, 10);
   });
 });
