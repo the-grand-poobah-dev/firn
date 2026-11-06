@@ -4,6 +4,22 @@ export type ActionResult={error?:string;success?:boolean};
 export async function signUpAction(input:unknown):Promise<ActionResult>{const p=signupSchema.safeParse(input);if(!p.success)return{error:p.error.issues[0]?.message||'Check your details.'};try{const s=await createClient();const {error}=await s.auth.signUp({email:p.data.email,password:p.data.password,options:{data:{full_name:p.data.fullName,country:p.data.country},emailRedirectTo:(headers().get('origin')||process.env.NEXT_PUBLIC_SITE_URL||'https://firn-the-grand-poobah-dev.vercel.app')+'/auth/confirm'}});return error?{error:error.message}:{success:true}}catch(e){return{error:e instanceof Error?e.message:'Unable to create account.'}}}
 export async function saveSignupCountryAction():Promise<ActionResult>{const s=await createClient();const {data:{user}}=await s.auth.getUser();if(!user)return{error:'Please sign in again.'};const country=typeof user.user_metadata?.country==='string'?user.user_metadata.country:null;if(!country)return{success:true};const {error}=await s.from('profiles').update({country}).eq('id',user.id);return error?{error:error.message}:{success:true}}
 export async function signInPasswordAction(input:{email:string;password:string}):Promise<ActionResult>{try{const s=await createClient();const {error}=await s.auth.signInWithPassword({email:input.email.trim(),password:input.password});if(error)return{error:error.message};const {data:{user}}=await s.auth.getUser();if(!user)return{error:'Unable to establish session.'};redirect(await onboardingDestination(user.id))}catch(e){if(e&&typeof e==='object'&&'digest'in e)throw e;return{error:e instanceof Error?e.message:'Unable to sign in.'}}}
+export async function signInDemoAction():Promise<ActionResult>{
+  if(process.env.NODE_ENV==='production'||process.env.NEXT_PUBLIC_DEMO!=='1')return{error:'Demo sign-in is disabled in this environment.'};
+  const password=process.env.DEMO_PASSWORD;
+  if(!password)return{error:'Demo account is not configured. Set DEMO_PASSWORD on the server.'};
+  try{
+    const s=await createClient();
+    const {error}=await s.auth.signInWithPassword({email:'demo@firn.example',password});
+    if(error)return{error:error.message};
+    const {data:{user}}=await s.auth.getUser();
+    if(!user)return{error:'Unable to establish the demo session.'};
+    redirect(await onboardingDestination(user.id));
+  }catch(e){
+    if(e&&typeof e==='object'&&'digest'in e)throw e;
+    return{error:e instanceof Error?e.message:'Unable to open the demo account.'};
+  }
+}
 export async function getOnboardingPathAction():Promise<string>{const s=await createClient();const {data:{user}}=await s.auth.getUser();return user?await onboardingDestination(user.id):'/welcome'}
 export async function signInCodeAction(email:string):Promise<ActionResult>{try{const s=await createClient();const {error}=await s.auth.signInWithOtp({email:email.trim(),options:{shouldCreateUser:false,emailRedirectTo:(headers().get('origin')||process.env.NEXT_PUBLIC_SITE_URL||'https://firn-the-grand-poobah-dev.vercel.app')+'/auth/confirm'}});return error?{error:error.message}:{success:true}}catch(e){return{error:e instanceof Error?e.message:'Unable to send code.'}}}
 export async function saveProfileAction(input:unknown):Promise<ActionResult>{const p=profileSchema.safeParse(input);if(!p.success)return{error:p.error.issues[0]?.message||'Check your choices.'};try{const s=await createClient();const {data:{user}}=await s.auth.getUser();if(!user)return{error:'Your session expired.'};const {data:old}=await s.from('profiles').select('prefs').eq('id',user.id).maybeSingle();const prefs={...((old?.prefs??{}) as Record<string,import('@/lib/database.types').Json>),onboarding_profile_complete:true};const {error}=await s.from('profiles').update({goals:p.data.goals,lock_pref:p.data.lockPref,risk_level:p.data.riskLevel,prefs}).eq('id',user.id);return error?{error:error.message}:{success:true}}catch(e){return{error:e instanceof Error?e.message:'Could not save your profile.'}}}
