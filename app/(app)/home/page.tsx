@@ -57,10 +57,14 @@ export default async function HomePage() {
         <div className="grid grid-cols-2 gap-3">{properties.slice(0, 2).map(property => <PropertyTile key={property.id} property={property}/>)}</div>
       </section>
     </> : <EmptySavings/>}
-    <Card className="flex items-center justify-between gap-3">
-      <div><p className="text-sm font-semibold">Explore your portfolio</p><p className="mt-1 text-xs text-muted">Daily earnings, allocations and global exposure.</p></div>
-      <Link href="/home/today" className="grid size-10 shrink-0 place-items-center rounded-full bg-card2 text-accent"><Icon name="arrow"/></Link>
-    </Card>
+    <section className="space-y-3">
+      <h2 className="text-base font-semibold">Portfolio insights</h2>
+      <div className="grid grid-cols-3 gap-2">
+        <Link href="/home/today" className="rounded-2xl border border-line bg-card p-3 text-center"><Icon name="sun" size={18} className="mx-auto text-accent"/><span className="mt-2 block text-xs font-semibold">Today</span></Link>
+        <Link href="/home/portfolio" className="rounded-2xl border border-line bg-card p-3 text-center"><Icon name="chart" size={18} className="mx-auto text-accent"/><span className="mt-2 block text-xs font-semibold">Portfolio</span></Link>
+        <Link href="/home/geography" className="rounded-2xl border border-line bg-card p-3 text-center"><Icon name="globe" size={18} className="mx-auto text-accent"/><span className="mt-2 block text-xs font-semibold">Geography</span></Link>
+      </div>
+    </section>
     <p className="pb-2 text-center text-[10px] leading-5 text-muted">Returns are targets, not guarantees. Capital can be lost. Property information is illustrative and not financial advice.</p>
   </div>;
 }
