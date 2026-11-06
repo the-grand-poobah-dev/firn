@@ -110,6 +110,9 @@ $seed$;
 
 RESET request.jwt.claim.role;
 
+-- Post today's accrual before comparing the value with elapsed days in growth().
+SELECT public.accrue_daily();
+
 -- 1. Accrual row count for the demo positions.
 WITH demo_user AS (
   SELECT id FROM auth.users WHERE email = 'demo@firn.example'
@@ -154,8 +157,7 @@ FROM public.accruals a
 WHERE a.position_id IN (SELECT id FROM demo_positions)
   AND a.accrual_date = (now() AT TIME ZONE 'UTC')::date;
 
--- Idempotency proof: accrue once, snapshot the count, then ensure a second run adds nothing.
-SELECT public.accrue_daily();
+-- Idempotency proof: snapshot after the first run above, then ensure a second run adds nothing.
 DO $check$
 DECLARE
   v_before bigint;
