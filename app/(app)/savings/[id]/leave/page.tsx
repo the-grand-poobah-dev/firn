@@ -1,0 +1,1 @@
+import {notFound} from 'next/navigation';import {SavingsLeave} from '@/components/savings/SavingsUI';import {getSavingsPosition} from '@/lib/savings';export const dynamic='force-dynamic';export default async function LeavePage({params}:{params:{id:string}}){const position=await getSavingsPosition(params.id);if(!position)notFound();return <SavingsLeave p={position}/>;}
