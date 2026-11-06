@@ -28,7 +28,7 @@ export function StressTool() {
     }),
   }));
   const tone = (vacancy: number) => vacancy === 6
-    ? 'text-positive'
+    ? 'text-pos'
     : vacancy === 20
       ? 'text-amber-600'
       : 'text-rose-600';
