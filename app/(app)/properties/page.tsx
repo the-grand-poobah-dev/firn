@@ -1,7 +1,8 @@
 import Link from 'next/link';
 import { TopBar } from '@/components/app/TopBar';
 import { PropertyDeck } from '@/components/properties/PropertyDeck';
-import { getProperties, type PropertyRecord } from '@/lib/properties';
+import { getProperties } from '@/lib/properties';
+import type { PropertyRecord } from '@/lib/property-utils';
 function filterRows(rows:PropertyRecord[],query:Record<string,string|undefined>) {
   return rows.filter(p=>{
     const country=query.country;

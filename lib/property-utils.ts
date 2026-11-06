@@ -17,7 +17,14 @@ export function artSeed(slug: string): number {
   for (let i = 0; i < slug.length; i++) hash = Math.imul(hash ^ slug.charCodeAt(i), 16777619);
   return hash >>> 0;
 }
-export function artKind(value: string): 'tower' | 'villa' | 'marbella' | 'office' | 'palm' | 'lisbon' | 'zurich' | 'mallorca' {
+export function artKind(value: string, seed = 0): 'tower' | 'villa' | 'marbella' | 'office' | 'palm' | 'lisbon' | 'zurich' | 'mallorca' {
   const kinds = ['tower','villa','marbella','office','palm','lisbon','zurich','mallorca'];
-  return kinds.includes(value) ? value as ReturnType<typeof artKind> : 'tower';
+  if (kinds.includes(value)) return value as ReturnType<typeof artKind>;
+  const fallbacks: Record<string, string[]> = {
+    hotel: ['marbella','mallorca','villa','palm'],
+    loft: ['zurich','office','lisbon'],
+    residential: ['tower','palm','office','marbella'],
+  };
+  const choices = fallbacks[value] ?? ['tower'];
+  return choices[Math.abs(Math.floor(seed)) % choices.length] as ReturnType<typeof artKind>;
 }
