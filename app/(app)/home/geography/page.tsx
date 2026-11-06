@@ -1,6 +1,6 @@
 import { requireUser } from '@/lib/auth';
 import { getPortfolio, getProperties } from '@/lib/data';
-import { usd, pct } from '@/lib/format';
+import { pct } from '@/lib/format';
 import { EmptySavings } from '@/components/home/EmptySavings';
 import { TopBar } from '@/components/app/TopBar';
 import { Card } from '@/components/ui/Card';
