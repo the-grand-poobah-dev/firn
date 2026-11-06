@@ -2,6 +2,7 @@ import {beforeEach,describe,expect,it,vi} from 'vitest';
 const mocks=vi.hoisted(()=>({createClient:vi.fn(),revalidatePath:vi.fn()}));
 vi.mock('@/lib/supabase/server',()=>({createClient:mocks.createClient}));
 vi.mock('next/cache',()=>({revalidatePath:mocks.revalidatePath}));
+vi.mock('@/lib/savings',()=>({getSavingsPosition:vi.fn()}));
 import {PATCH} from '../app/api/positions/[id]/route';
 
 function clientFor(position:unknown,updated:unknown=null){
