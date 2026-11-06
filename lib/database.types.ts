@@ -20,6 +20,7 @@ export type Database = {
     Functions: {
       accrue_daily: { Args: never; Returns: undefined };
       create_position: { Args: { p_amount: number; p_plan: Database["public"]["Enums"]["plan_code"] }; Returns: string };
+      create_position_idempotent: { Args: { p_amount: number; p_key: string; p_plan: Database["public"]["Enums"]["plan_code"] }; Returns: string };
       deposit_demo: { Args: { p_amount: number; p_method: string }; Returns: number };
       early_exit: { Args: { p_position: string }; Returns: number };
       wallet_balance: { Args: never; Returns: number };
