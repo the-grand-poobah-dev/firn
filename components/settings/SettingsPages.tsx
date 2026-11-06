@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import { Card } from '@/components/ui/Card';
@@ -21,6 +21,7 @@ export function SettingsPages({section,profile}:Props){
  const [totp,setTotp]=useState<{id:string;qr:string;secret:string}|null>(null),[code,setCode]=useState('');
  const [factors,setFactors]=useState<Array<{id:string;friendly_name:string;status:string}>>([]);
  const [copied,setCopied]=useState(false);
+ useEffect(()=>{if(localStorage.getItem('firn-app-lock-enabled')==='true')setPrefs(current=>({...current,app_lock_enabled:true}));},[]);
  const title=links.find(l=>l[0]===section)?.[1]??'Settings';
  async function save(body:Record<string,unknown>){setBusy(true);setStatus('');try{await patch(body);setStatus('Saved.')}catch(e){setStatus(e instanceof Error?e.message:'Could not save.')}finally{setBusy(false)}}
  async function toggle(key:string,value:boolean){
