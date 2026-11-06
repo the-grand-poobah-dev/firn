@@ -26,3 +26,5 @@ export function daysBetween(a: Date | string, b: Date | string): number {
   };
   return Math.round((utcDay(b) - utcDay(a)) / 86_400_000);
 }
+
+export { formatCurrency } from '@/lib/fx';
