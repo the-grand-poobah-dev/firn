@@ -12,7 +12,7 @@ import {Icon} from '@/components/ui/Icon';
 type Property={id:string;name:string;slug:string;city:string;country:string;art:string};
 type Props={step:'plans'|'plan'|'amount'|'projection'|'distribution'|'review'|'risk'|'pay'|'success';selectedPlan?:PlanCode;walletBalance:number;properties:Property[]};
 const planKeys:PlanCode[]=['six','twelve'];
-const checks=['I understand target returns are not guaranteed and capital can fall.','I understand this savings position is illiquid. Early exit forfeits profit and may take weeks to process.','I will not need this money before the unlock date shown.','I have read the plan document and fee schedule.'];
+const checks=['I understand target returns are not guaranteed and capital can fall.','I understand this savings position is illiquid. Early exit is unavailable before day 90, forfeits accrued profit, and may take weeks to process.','I will not need this money before the unlock date shown.','I have read the plan document and fee schedule.'];
 const money=(n:number)=>usd(n,2);
 function dateAfterMonths(months:number){const d=new Date();d.setMonth(d.getMonth()+months);return d;}
 function seedSort<T extends {id:string}>(items:T[],seed:string){const hash=(s:string)=>{let h=0;for(let i=0;i<s.length;i++)h=(h*31+s.charCodeAt(i))|0;return h;};return [...items].sort((a,b)=>hash(seed+a.id)-hash(seed+b.id));}
