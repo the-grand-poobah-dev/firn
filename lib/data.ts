@@ -115,7 +115,8 @@ export async function getPortfolio(): Promise<PortfolioResult> {
       .in('position_id', positionIds);
     if (allocationError) throw allocationError;
 
-    const grouped = new Map<string, { property: NonNullable<(typeof allocations)[number]['properties']>; amount: number }>();
+    type AllocationRow = NonNullable<typeof allocations>[number];
+    const grouped = new Map<string, { property: NonNullable<AllocationRow['properties']>; amount: number }>();
     for (const allocation of allocations ?? []) {
       const property = allocation.properties;
       if (!property) continue;
