@@ -1,29 +1,28 @@
 # Supabase Auth setup for FIRN
 
-The app uses Supabase Auth with cookie-backed SSR sessions via `@supabase/ssr`.
+FIRN uses Supabase email + password authentication with confirmation links. **You do not need to edit any email templates.** Leave the built-in Supabase templates at their defaults.
 
-## Required dashboard settings
+## One-time Supabase dashboard setup
 
-In Supabase Dashboard → Authentication → URL Configuration:
+1. Open Authentication → Providers → Email and make sure Email is enabled and **Confirm email** is turned on.
+2. Open Authentication → URL Configuration.
+3. Set Site URL to:
+   `https://firn-the-grand-poobah-dev.vercel.app`
+4. Under Additional Redirect URLs, add:
+   `https://*-the-grand-poobah-dev.vercel.app/**`
+   `http://localhost:3000/**`
 
-- Enable email confirmations under Authentication → Providers → Email.
-- Set Site URL to `https://firn-the-grand-poobah-dev.vercel.app`.
-- Add `https://*.vercel.app/**` to Additional Redirect URLs (or the equivalent wildcard pattern accepted by the dashboard).
-- If you use the alternate production alias, add `https://firn-topaz.vercel.app/**` too.
+The default Supabase **Confirm signup** email already contains a confirmation link. FIRN sends the user back to `/auth/confirm`, exchanges the confirmation code for a session, saves the signup country, and continues onboarding.
 
-## Email templates
+## How users sign in
 
-For Confirm signup, include the six-digit OTP token as `{{ .Token }}` so the user can enter it on `/verify`. The confirmation link should use a token hash and return to `/auth/confirm`, for example:
+- New users create an account with email and password.
+- They click the standard Supabase confirmation link in their inbox.
+- They are returned to FIRN and continue onboarding.
+- Returning users sign in with email and password.
 
-```html
-<a href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=signup">Confirm your email</a>
-<p>Your code: {{ .Token }}</p>
-```
-
-For Magic Link / email OTP sign-in, use the same `token_hash` callback pattern and include `{{ .Token }}` for the code-entry experience.
-
-The app supports both the manual six-digit verification flow and the token-hash callback route.
+No custom OTP or Magic Link template is required.
 
 ## Vercel
 
-Set `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` (or `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`) for Preview and Production. Do not add a service-role key to browser-exposed variables.
+Set `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` (or `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`) for Preview and Production. Never expose a service-role key in browser variables.
