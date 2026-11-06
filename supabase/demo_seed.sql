@@ -1,12 +1,112 @@
--- FIRN demo data is created by scripts/seed-demo.ts using the Supabase service role.
--- Set DEMO_PASSWORD in the server/local environment before running:
---   npx --yes tsx scripts/seed-demo.ts
---
--- The script resets only demo@firn.example's profile-related rows, recreates three
--- positions and ten allocations per position, backfills completed days, and proves
--- same-day accrual idempotency by invoking accrue_daily() twice.
---
--- Read-only acceptance checks (run after the seeder):
+-- FIRN demo seed. Create demo@firn.example first with scripts/seed-demo.ts (service role).
+-- This SQL file can then be run in the Supabase SQL editor as a database-owner operation.
+-- It resets only that demo user's wallet, notifications, positions, allocations and accruals.
+-- Wallet arithmetic: 18,740.50 deposits - 17,500.00 locked = 1,240.50 available.
+
+SET request.jwt.claim.role = 'service_role';
+
+DO $seed$
+DECLARE
+  v_user_id uuid;
+  v_seed record;
+  v_plan record;
+  v_position_id uuid;
+  v_property record;
+  v_total_cents bigint;
+  v_base_cents bigint;
+  v_remainder bigint;
+BEGIN
+  SELECT id INTO v_user_id FROM auth.users WHERE email = 'demo@firn.example';
+  IF v_user_id IS NULL THEN
+    RAISE EXCEPTION 'Create demo@firn.example with scripts/seed-demo.ts before running this seed SQL.';
+  END IF;
+
+  DELETE FROM public.wallet_ledger WHERE user_id = v_user_id;
+  DELETE FROM public.notifications WHERE user_id = v_user_id;
+  DELETE FROM public.positions WHERE user_id = v_user_id;
+
+  UPDATE public.profiles
+  SET full_name = 'Julius Thandi', country = 'Kenya', kyc_status = 'verified', risk_level = 3
+  WHERE id = v_user_id;
+
+  INSERT INTO public.wallet_ledger (user_id, kind, amount, method, created_at) VALUES
+    (v_user_id, 'deposit', 5000.00, 'demo_seed', '2026-06-10T10:00:00Z'),
+    (v_user_id, 'deposit', 6000.00, 'demo_seed', '2026-08-29T10:00:00Z'),
+    (v_user_id, 'deposit', 7740.50, 'demo_seed', '2026-09-28T10:00:00Z');
+
+  FOR v_seed IN
+    SELECT * FROM (VALUES
+      ('twelve'::public.plan_code, 10000.00::numeric, DATE '2026-06-12'),
+      ('six'::public.plan_code, 5000.00::numeric, DATE '2026-09-03'),
+      ('twelve'::public.plan_code, 2500.00::numeric, DATE '2026-10-01')
+    ) AS seed(plan_code, principal, started_on)
+  LOOP
+    SELECT lock_months, target_apy INTO v_plan
+    FROM public.plans WHERE code = v_seed.plan_code;
+
+    IF NOT FOUND THEN
+      RAISE EXCEPTION 'Missing plan %', v_seed.plan_code;
+    END IF;
+
+    INSERT INTO public.positions (
+      user_id, plan, principal, apy, started_on, matures_on, status, auto_roll, settled
+    ) VALUES (
+      v_user_id,
+      v_seed.plan_code,
+      v_seed.principal,
+      v_plan.target_apy,
+      v_seed.started_on,
+      (v_seed.started_on + make_interval(months => v_plan.lock_months))::date,
+      'active',
+      'ask',
+      false
+    )
+    RETURNING id INTO v_position_id;
+
+    v_total_cents := round(v_seed.principal * 100)::bigint;
+    v_base_cents := v_total_cents / 10;
+    v_remainder := mod(v_total_cents, 10);
+
+    FOR v_property IN
+      SELECT id, row_number() OVER (ORDER BY sort NULLS LAST, id) AS rn
+      FROM public.properties
+      WHERE is_active = true
+      ORDER BY sort NULLS LAST, id
+      LIMIT 10
+    LOOP
+      INSERT INTO public.allocations (position_id, property_id, amount)
+      VALUES (
+        v_position_id,
+        v_property.id,
+        (v_base_cents + CASE WHEN v_property.rn = 1 THEN v_remainder ELSE 0 END)::numeric / 100
+      );
+    END LOOP;
+
+    INSERT INTO public.wallet_ledger (user_id, kind, amount, method, created_at)
+    VALUES (
+      v_user_id,
+      'lock',
+      -v_seed.principal,
+      'position',
+      (v_seed.started_on::timestamp AT TIME ZONE 'UTC') + interval '5 minutes'
+    );
+
+    PERFORM public.backfill_accruals(v_position_id);
+  END LOOP;
+
+  INSERT INTO public.notifications (user_id, title, body, read, created_at) VALUES
+    (v_user_id, 'Daily interest added', 'Your Firn savings earned interest today.', false, '2026-11-06T00:05:00Z'),
+    (v_user_id, 'Marina Crest occupancy report', 'The latest occupancy report for Marina Crest Tower is ready.', false, '2026-11-04T09:00:00Z'),
+    (v_user_id, 'Maturity reminder', 'Your Firn Six position is approaching its maturity date.', false, '2026-11-03T09:00:00Z'),
+    (v_user_id, 'October statement ready', 'Your October savings statement is ready to review.', false, '2026-11-01T08:00:00Z'),
+    (v_user_id, 'New device sign-in', 'A new device signed in to your Firn account.', false, '2026-10-28T16:30:00Z'),
+    (v_user_id, 'Villa Cipressi refurbished', 'Villa Cipressi has completed its refurbishment update.', false, '2026-10-24T11:00:00Z');
+END;
+$seed$;
+
+RESET request.jwt.claim.role;
+
+-- 1. Accrual row count for the demo positions.
 WITH demo_user AS (
   SELECT id FROM auth.users WHERE email = 'demo@firn.example'
 ),
@@ -17,7 +117,7 @@ SELECT count(*) AS accrual_count
 FROM public.accruals a
 WHERE a.position_id IN (SELECT id FROM demo_positions);
 
--- Actual value vs the same daily-compounding formula used by lib/finance.ts growth().
+-- 2. Actual position values vs lib/finance.ts growth() for elapsed days.
 WITH demo_user AS (
   SELECT id FROM auth.users WHERE email = 'demo@firn.example'
 )
@@ -38,7 +138,7 @@ LEFT JOIN public.accruals a ON a.position_id = p.id AND a.accrual_date <= curren
 GROUP BY p.id
 ORDER BY p.started_on;
 
--- Total interest posted for the demo positions today (UTC).
+-- 3. Total interest posted today (UTC).
 WITH demo_user AS (
   SELECT id FROM auth.users WHERE email = 'demo@firn.example'
 ),
@@ -49,3 +149,30 @@ SELECT coalesce(sum(a.amount), 0) AS total_earned_today
 FROM public.accruals a
 WHERE a.position_id IN (SELECT id FROM demo_positions)
   AND a.accrual_date = (now() AT TIME ZONE 'UTC')::date;
+
+-- Idempotency proof: accrue once, snapshot the count, then ensure a second run adds nothing.
+SELECT public.accrue_daily();
+DO $check$
+DECLARE
+  v_before bigint;
+  v_after bigint;
+BEGIN
+  SELECT count(*) INTO v_before
+  FROM public.accruals a
+  JOIN public.positions p ON p.id = a.position_id
+  JOIN auth.users u ON u.id = p.user_id
+  WHERE u.email = 'demo@firn.example';
+
+  PERFORM public.accrue_daily();
+
+  SELECT count(*) INTO v_after
+  FROM public.accruals a
+  JOIN public.positions p ON p.id = a.position_id
+  JOIN auth.users u ON u.id = p.user_id
+  WHERE u.email = 'demo@firn.example';
+
+  IF v_after <> v_before THEN
+    RAISE EXCEPTION 'accrue_daily is not idempotent: count changed from % to %', v_before, v_after;
+  END IF;
+END;
+$check$;
