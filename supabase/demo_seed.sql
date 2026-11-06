@@ -25,9 +25,13 @@ BEGIN
   DELETE FROM public.notifications WHERE user_id = v_user_id;
   DELETE FROM public.positions WHERE user_id = v_user_id;
 
-  UPDATE public.profiles
-  SET full_name = 'Julius Thandi', country = 'Kenya', kyc_status = 'verified', risk_level = 3
-  WHERE id = v_user_id;
+  INSERT INTO public.profiles (id, full_name, country, kyc_status, risk_level)
+  VALUES (v_user_id, 'Julius Thandi', 'Kenya', 'verified', 3)
+  ON CONFLICT (id) DO UPDATE SET
+    full_name = EXCLUDED.full_name,
+    country = EXCLUDED.country,
+    kyc_status = EXCLUDED.kyc_status,
+    risk_level = EXCLUDED.risk_level;
 
   INSERT INTO public.wallet_ledger (user_id, kind, amount, method, created_at) VALUES
     (v_user_id, 'deposit', 5000.00, 'demo_seed', '2026-06-10T10:00:00Z'),
