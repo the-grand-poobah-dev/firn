@@ -1,17 +1,19 @@
 'use client';
 import {useState} from 'react';
 import {createClient} from '@/lib/supabase/client';
-export function SocialAuthButtons(){
+export function SocialAuthButtons({signup=false,consentGiven=false}:{signup?:boolean;consentGiven?:boolean}){
  const[busy,setBusy]=useState('');
  const[error,setError]=useState('');
  async function start(provider:'google'|'facebook'){
   setBusy(provider);setError('');
-  const {error}=await createClient().auth.signInWithOAuth({provider,options:{redirectTo:window.location.origin+'/auth/confirm?next=/profile'}});
+  const redirectTo=window.location.origin+'/auth/confirm?next=/profile'+(signup?'&adult=yes&terms=yes':'');
+  const {error}=await createClient().auth.signInWithOAuth({provider,options:{redirectTo}});
   if(error){setError(error.message);setBusy('');}
  }
  return <div className="space-y-3">
-  <button type="button" disabled={!!busy} onClick={()=>start('google')} className="flex min-h-12 w-full items-center justify-center gap-3 rounded-full border border-line bg-card px-4 text-sm font-semibold text-fg disabled:opacity-60"><span aria-hidden="true" className="font-bold text-base">G</span>{busy==='google'?'Connecting…':'Continue with Google'}</button>
-  <button type="button" disabled={!!busy} onClick={()=>start('facebook')} className="flex min-h-12 w-full items-center justify-center gap-3 rounded-full border border-line bg-card px-4 text-sm font-semibold text-fg disabled:opacity-60"><span aria-hidden="true" className="font-bold text-base text-[#1877F2]">f</span>{busy==='facebook'?'Connecting…':'Continue with Facebook'}</button>
+  <button type="button" disabled={!!busy||(signup&&!consentGiven)} onClick={()=>start('google')} className="flex min-h-12 w-full items-center justify-center gap-3 rounded-full border border-line bg-card px-4 text-sm font-semibold text-fg disabled:opacity-60"><span aria-hidden="true" className="font-bold text-base">G</span>{busy==='google'?'Connecting…':'Continue with Google'}</button>
+  <button type="button" disabled={!!busy||(signup&&!consentGiven)} onClick={()=>start('facebook')} className="flex min-h-12 w-full items-center justify-center gap-3 rounded-full border border-line bg-card px-4 text-sm font-semibold text-fg disabled:opacity-60"><span aria-hidden="true" className="font-bold text-base text-[#1877F2]">f</span>{busy==='facebook'?'Connecting…':'Continue with Facebook'}</button>
+  {signup&&!consentGiven&&<p className="text-center text-[10px] text-muted">Confirm your age and accept the terms below to enable social sign-up.</p>}
   {error&&<p role="alert" className="text-xs text-neg">{error}</p>}
  </div>;
 }
