@@ -3,7 +3,6 @@ import Link from 'next/link';
 import { requireUser } from '@/lib/auth';
 import { getPortfolio, getProperties } from '@/lib/data';
 import { usd, pct } from '@/lib/format';
-import { Card } from '@/components/ui/Card';
 import { FloatingCard } from '@/components/cards/FloatingCard';
 import { Sparkline } from '@/components/charts/Sparkline';
 import { PositionDeck } from '@/components/home/PositionDeck';
