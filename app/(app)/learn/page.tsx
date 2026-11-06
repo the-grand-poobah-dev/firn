@@ -1,1 +1,1 @@
-export default function Page() { return <main className="p-6"><h1 className="text-2xl font-semibold">Learn</h1><p className="mt-3 text-sm text-slate-400">Firn scaffold — placeholder screen.</p><p className="mt-6 text-xs text-slate-500">Returns are targets, not guarantees. Capital can be lost.</p></main>; }
+import { LearnHome } from '@/components/learn/LearnHome';export default function Page(){return <div className="space-y-4"><div><p className="text-sm text-muted">FIRN Academy</p><h1 className="text-2xl font-semibold">Learn</h1></div><LearnHome/></div>}

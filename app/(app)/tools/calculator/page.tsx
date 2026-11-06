@@ -1,0 +1,1 @@
+import { Calculator } from '@/components/tools/Calculator';export default function Page(){return <div className="space-y-4"><div><p className="text-sm text-muted">Tools / Calculator</p><h1 className="text-2xl font-semibold">Growth calculator</h1></div><Calculator/></div>}
