@@ -9,7 +9,7 @@
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "seed:demo": "npx --yes tsx scripts/seed-demo.ts"
+    "seed:demo": "npx --yes tsx scripts/run-seed-demo.ts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.6.1",
