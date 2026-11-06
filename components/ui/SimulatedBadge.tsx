@@ -1,1 +1,1 @@
-export function SimulatedBadge(){return <span className="inline-flex items-center rounded-full border border-warm/40 bg-warm/10 px-2 py-1 font-mono text-[9px] uppercase tracking-widest text-warm">Simulated</span>}
+export function SimulatedBadge(){return null}

@@ -18,7 +18,7 @@
   :root:not([data-theme]) { color-scheme: light; --bg:#EAF1F4; --card:#FFFFFF; --card2:#E1ECF0; --fg:#0B1A24; --muted:#587080; --line:#D0DEE4; --accent:#0A7F8F; --accent-on:#FFFFFF; --pos:#0F8A57; --neg:#C4402F; --warm:#B5681F; --c1:#0A7F8F; --c2:#C9772B; --c3:#0F8A57; --c4:#7A62D6; --c5:#D14A6C; --c6:#A68A12; --c7:#3F6FD6; --c8:#1F9C7C; }
 }
 * { box-sizing: border-box; }
-html { background: var(--bg); }
+html { background: var(--bg); overflow-x: clip; }\nbody { overflow-x: clip; }
 body { margin:0; background:var(--bg); color:var(--fg); font-family:var(--font-ui),system-ui,sans-serif; font-size:14px; -webkit-font-smoothing:antialiased; }
 button,input,select,textarea { font:inherit; }
 button:focus-visible,a:focus-visible,input:focus-visible { outline:2px solid var(--accent); outline-offset:3px; }

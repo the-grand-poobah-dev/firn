@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import localFont from 'next/font/local';
 import './globals.css';
 
@@ -16,8 +16,36 @@ const mono = localFont({
   variable: '--font-mono',
   display: 'swap',
 });
-export const metadata: Metadata = { title: 'Firn', description: 'Savings simulation. Targets are not guarantees.' };
+
+export const metadata: Metadata = {
+  title: { default: 'Firn', template: '%s · Firn' },
+  description: 'A simulated savings experience. Targets are not guarantees; capital can be lost.',
+  applicationName: 'Firn',
+  manifest: '/manifest.webmanifest',
+  icons: { icon: '/icon.svg', apple: '/icon-192.svg' },
+  openGraph: {
+    title: 'Firn',
+    description: 'A simulated savings experience. Targets are not guarantees; capital can be lost.',
+    images: ['/opengraph-image'],
+    type: 'website',
+  },
+  robots: { index: false, follow: false, googleBot: { index: false, follow: false } },
+};
+
+export const viewport: Viewport = {
+  themeColor: '#08141D',
+  colorScheme: 'dark light',
+};
+
 const themeScript = `(function(){try{var t=localStorage.getItem('firn-theme');if(t==='dark'||t==='light'){document.documentElement.setAttribute('data-theme',t)}else{document.documentElement.removeAttribute('data-theme')}}catch(e){}})()`;
+
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return <html lang="en" suppressHydrationWarning><head><script dangerouslySetInnerHTML={{__html:themeScript}} /></head><body className={`${ui.variable} ${mono.variable}`}>{children}</body></html>;
+  return (
+    <html lang="en" suppressHydrationWarning>
+      <head><script dangerouslySetInnerHTML={{ __html: themeScript }} /></head>
+      <body className={`${ui.variable} ${mono.variable}`}>
+        {children}
+      </body>
+    </html>
+  );
 }

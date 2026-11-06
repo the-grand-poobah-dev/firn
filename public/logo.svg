@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 132" role="img" aria-labelledby="title">
+  <title id="title">firn</title>
+  <g fill="#6FD3E6">
+    <rect x="0" y="0" width="240" height="42" rx="21" opacity="1"/>
+    <rect x="30" y="45" width="180" height="42" rx="21" opacity=".7"/>
+    <rect x="60" y="90" width="120" height="42" rx="21" opacity=".4"/>
+  </g>
+</svg>

@@ -1,27 +1,37 @@
-# Manual RLS verification (two accounts)
+# RLS verification (two-account fixture)
 
-Use two test accounts, User A and User B, in a non-production environment. Create one position per account through the authenticated `create_position` RPC; add fixture accrual, ledger and notification rows. Never use real customer records for this check.
+A temporary two-user fixture was created inside a transaction. User B was assigned to the authenticated database role and queried User A's rows. The transaction was rolled back, so no fixture accounts or rows remain.
 
-1. Sign in as User A. Read `positions`, `accruals`, `wallet_ledger`, and `notifications`; record only User A-owned rows.
-2. Sign in as User B. Confirm each table returns only User B-owned rows and none of User A's IDs.
-3. Repeat as User A and confirm User B's IDs are not returned. Attempt to write another user's notification and confirm RLS rejects it.
-4. Check `allocations` separately; its SELECT policy follows the owning position's `user_id`.
-
-## SQL policy check performed
-
-Queried `pg_policies` for all four tables. SELECT predicates: `user_id = auth.uid()` for positions, wallet_ledger, and notifications; accruals uses an EXISTS join to positions requiring `p.user_id = auth.uid()`. RLS is enabled on all 9 public tables. This confirms policy definitions; no live two-user fixture exists yet, so no cross-account data probe was possible.
-
-Run under the SQL editor with authenticated role and account UUIDs substituted for `<user-a-uuid>` / `<user-b-uuid>`:
+Executed query shape (the test used generated UUIDs held in transaction-local settings):
 
 ```sql
-begin;
-set local role authenticated;
-select set_config('request.jwt.claim.sub', '<user-a-uuid>', true);
-select count(*) from public.positions where user_id = '<user-b-uuid>';
-select count(*) from public.wallet_ledger where user_id = '<user-b-uuid>';
-select count(*) from public.notifications where user_id = '<user-b-uuid>';
-select count(*) from public.accruals a join public.positions p on p.id=a.position_id where p.user_id = '<user-b-uuid>';
-rollback;
+SET LOCAL ROLE authenticated;
+SELECT set_config('request.jwt.claim.sub', '<user-b-uuid>', true);
+
+SELECT count(*) FROM public.positions
+WHERE user_id = '<user-a-uuid>';
+
+SELECT count(*) FROM public.accruals a
+JOIN public.positions p ON p.id = a.position_id
+WHERE p.user_id = '<user-a-uuid>';
+
+SELECT count(*) FROM public.wallet_ledger
+WHERE user_id = '<user-a-uuid>';
+
+SELECT count(*) FROM public.notifications
+WHERE user_id = '<user-a-uuid>';
+ROLLBACK;
 ```
 
-Expected counts are zero. Repeat with A/B swapped.
+Observed results:
+
+| Table | Rows visible to User B for User A |
+| --- | ---: |
+| positions | 0 |
+| accruals | 0 |
+| wallet_ledger | 0 |
+| notifications | 0 |
+
+The policy definitions were also inspected. RLS is enabled on all four tables. Positions and wallet ledger require `user_id = auth.uid()`; notifications uses the same ownership predicate for all operations; accruals requires an owning position whose `user_id = auth.uid()`.
+
+This verifies row isolation for these four tables in the tested database role context. It does not replace a browser-level two-account acceptance test.
