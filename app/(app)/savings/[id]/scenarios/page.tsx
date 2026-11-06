@@ -1,0 +1,1 @@
+import {notFound} from 'next/navigation';import {SavingsScenarios} from '@/components/savings/SavingsUI';import {getSavingsPosition} from '@/lib/savings';export const dynamic='force-dynamic';export default async function ScenariosPage({params}:{params:{id:string}}){const position=await getSavingsPosition(params.id);if(!position)notFound();return <SavingsScenarios p={position}/>;}
