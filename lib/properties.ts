@@ -52,15 +52,19 @@ export async function getProperties(): Promise<PropertyRecord[]> {
   if (error) throw error;
   return ((data ?? []) as unknown as Record<string, unknown>[]).map(normalize);
 }
-export async function getProperty(slug: string): Promise<{ property: PropertyRecord; updates: PropertyUpdate[] } | null> {
+export async function getProperty(slug: string): Promise<{ property: PropertyRecord; updates: PropertyUpdate[]; investorCount: number } | null> {
   const supabase = await signedInClient();
   const { data, error } = await supabase.from('properties').select('*').eq('slug', slug).eq('is_active', true).maybeSingle();
   if (error) throw error;
   if (!data) return null;
   const property = normalize(data as unknown as Record<string, unknown>);
-  const { data: updates, error: updateError } = await supabase.from('property_updates').select('id,title,body,posted_on').eq('property_id', property.id).order('posted_on', { ascending: false });
+  const [{ data: updates, error: updateError }, { data: investorCount, error: countError }] = await Promise.all([
+    supabase.from('property_updates').select('id,title,body,posted_on').eq('property_id', property.id).order('posted_on', { ascending: false }),
+    supabase.rpc('property_investor_count', { p_property: property.id }),
+  ]);
   if (updateError) throw updateError;
-  return { property, updates: (updates ?? []) as PropertyUpdate[] };
+  if (countError) throw countError;
+  return { property, updates: (updates ?? []) as PropertyUpdate[], investorCount: Number(investorCount ?? 0) };
 }
 export function propertyRisk(property: Pick<PropertyRecord, 'occupancy' | 'target_return'>): 'Lower' | 'Medium' | 'Higher' {
   if (property.occupancy < .85 || property.target_return > .145) return 'Higher';

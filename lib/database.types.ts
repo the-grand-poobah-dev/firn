@@ -23,6 +23,7 @@ export type Database = {
       deposit_demo: { Args: { p_amount: number; p_method: string }; Returns: number };
       early_exit: { Args: { p_position: string }; Returns: number };
       wallet_balance: { Args: never; Returns: number };
+      property_investor_count: { Args: { p_property: string }; Returns: number };
       withdraw_demo: { Args: { p_amount: number }; Returns: number };
     };
     Enums: { plan_code: "six" | "twelve" };

@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 import { Sheet } from '@/components/ui/Sheet';
 import { Chip } from '@/components/ui/Chip';
 const countries = ['Dubai','Italy','Spain','Portugal','Swiss'];
-const kinds = ['apartments','villas','estate','offices','residences'];
+const kinds = ['apartments','estate','hotel','lofts','offices','villas'];
 const statuses = ['All','Funding','Fully funded'];
 export function PropertyFilters() {
   const router = useRouter();
