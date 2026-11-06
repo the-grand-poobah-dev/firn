@@ -7,7 +7,7 @@ export const PLANS = {
 
 export const MIN_AMOUNT = 500;
 export const EARLY_EXIT_FEE = 0.015;
-export const EARLY_EXIT_MIN_DAYS = 30;
+export const EARLY_EXIT_MIN_DAYS = 90;
 
 export function dailyRate(apy: number): number { return Math.pow(1 + apy, 1 / 365) - 1; }
 export function growth(principal: number, apy: number, days: number): number { return principal * Math.pow(1 + apy, days / 365); }
