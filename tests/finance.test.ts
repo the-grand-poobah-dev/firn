@@ -33,7 +33,8 @@ describe('finance calculations', () => {
     expect(earlyExit({ principal: 1000, accrued: 50, daysIn: 90 }).receive).toBeCloseTo(985, 8);
   });
   it('returns plan APY at base vacancy assumptions', () => {
-    expect(vacancyScenario({ apy: PLANS.six.apy, vacancy: 0.06, rentChange: 0, valuationChange: 0 })).toBeCloseTo(PLANS.six.apy, 10);\n    expect(PLANS.six.termReturn).toBe(0.5);
+    expect(vacancyScenario({ apy: PLANS.six.apy, vacancy: 0.06, rentChange: 0, valuationChange: 0 })).toBeCloseTo(PLANS.six.apy, 10);
+    expect(PLANS.six.termReturn).toBe(0.5);
   });
   it('orders scenarios from optimistic to weak', () => {
     const values = scenarios(10000, 'twelve').map(s => s.value);
