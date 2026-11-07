@@ -37,5 +37,5 @@ export function propertyDescription(p:Pick<PropertyRecord,'name'|'city'|'country
  lofts:[`A loft residence portfolio in ${area}, comprising ${p.units} units. The listing highlights its urban character, access to city amenities and core property metrics.`,`This ${area} loft collection brings together ${p.units} residences in an urban setting. Review the occupancy and funding indicators before comparing similar assets.`,`An urban loft portfolio of ${p.units} units in ${area}, profiled around its neighbourhood context, valuation and capital raised.`]
  };
  const choices=narratives[type]??[`A ${type} property portfolio in ${area}, ${p.country}, with ${p.units} units. This listing brings together location context, occupancy and funding metrics for comparison.`];
- return choices[(Number(unique)||1)%choices.length];
+ return `${p.name}: ${choices[(Number(unique)||1)%choices.length]}`;
 }
