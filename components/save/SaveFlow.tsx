@@ -1,5 +1,5 @@
 'use client';
-import {useMemo,useRef,useState} from 'react';
+import {useMemo,useState} from 'react';
 import useEmblaCarousel from 'embla-carousel-react';
 import Link from 'next/link';
 import {useRouter,useSearchParams} from 'next/navigation';
