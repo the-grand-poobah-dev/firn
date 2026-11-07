@@ -8,7 +8,6 @@ import { Timeline } from '@/components/ui/Timeline';
 import { Icon } from '@/components/ui/Icon';
 import { usd, pct, shortDate } from '@/lib/format';
 import type { PropertyRecord, PropertyUpdate } from '@/lib/properties';
-import { propertyRisk } from '@/lib/properties';
 
 type Mode = 'financials' | 'rent' | 'documents' | 'location' | 'updates' | 'valuation' | 'share';
 export function PropertySubscreen({ property, mode, updates = [], share }: { property: PropertyRecord; mode: Mode; updates?: PropertyUpdate[]; share?: { principal: number; profit: number; positions: number } }) {
