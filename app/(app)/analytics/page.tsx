@@ -14,9 +14,9 @@ export default async function AnalyticsPage() {
     <div className="space-y-5">
       <TopBar title="Analytics" />
       <header>
-        <p className="label">YOUR SAVINGS SNAPSHOT</p>
+        <p className="label">YOUR INVESTMENT SNAPSHOT</p>
         <h2 className="mt-1 text-2xl font-semibold">Portfolio overview</h2>
-        <p className="mt-1 text-xs text-muted">Historical account figures from your savings records.</p>
+        <p className="mt-1 text-xs text-muted">Historical account figures from your investment records.</p>
       </header>
       <div className="grid grid-cols-2 gap-3">
         <Card><p className="label">TOTAL VALUE</p><p className="mt-2 text-xl font-semibold money">{usd(portfolio.totals.value, 2)}</p></Card>
@@ -40,7 +40,7 @@ export default async function AnalyticsPage() {
         )}
       </section>
       <section className="space-y-3">
-        <div><p className="label">POSITION MIX</p><h2 className="mt-1 text-base font-semibold">By savings plan</h2></div>
+        <div><p className="label">POSITION MIX</p><h2 className="mt-1 text-base font-semibold">By investment plan</h2></div>
         <Card className="space-y-3">
           {(['six', 'twelve'] as const).map(plan => {
             const positions = portfolio.positions.filter(position => position.plan === plan);
