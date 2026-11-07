@@ -54,7 +54,7 @@ export default async function WalletPage() {
           <Card><p className="text-sm text-muted">No wallet activity yet.</p></Card>
         )}
       </section>
-      <p className="text-center text-[10px] leading-5 text-muted">SIMULATED wallet display. Payment providers are not connected; this page does not accept or transfer funds.</p>
+      <p className="text-center text-[10px] leading-5 text-muted">Payment providers are not connected; this page does not accept or transfer funds.</p>
     </div>
   );
 }
