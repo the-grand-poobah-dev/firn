@@ -8,7 +8,7 @@ import {pct,usd} from '@/lib/format';
 import {Progress} from '@/components/ui/Progress';
 import {Icon,type IconName} from '@/components/ui/Icon';
 type Props={properties:PropertyRecord[];countries:string[];activeCountry:string};
-const layouts:{id:'cards'|'magazine'|'magazine2'|'rich';icon:IconName;hint:string}[]=[{id:'cards',icon:'building',hint:'Large cards'},{id:'magazine',icon:'book',hint:'Editorial feature'},{id:'magazine2',icon:'doc',hint:'Compact grid'},{id:'rich',icon:'users',hint:'Detailed list'}];
+const layouts:{id:'cards'|'magazine'|'magazine2'|'rich';icon:IconName;hint:string}[]=[{id:'cards',icon:'gallery',hint:'Large cards'},{id:'magazine',icon:'building',hint:'Editorial feature'},{id:'magazine2',icon:'grid',hint:'Compact grid'},{id:'rich',icon:'rows',hint:'Detailed list'}];
 function Tile({property,compact=false}:{property:PropertyRecord;compact?:boolean}){
  const raised=property.target_raise>0?property.raised/property.target_raise*100:0;
  return <Link href={`/properties/${property.slug}`} className="block min-w-0 overflow-hidden rounded-[22px] border border-line bg-card active:scale-[.99]">
