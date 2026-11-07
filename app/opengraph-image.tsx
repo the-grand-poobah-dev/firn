@@ -1,7 +1,7 @@
 import { ImageResponse } from 'next/og';
 
 export const runtime = 'edge';
-export const alt = 'firn — simulated savings experience';
+export const alt = 'firn — simulated property investment experience';
 export const size = { width: 1200, height: 630 };
 export const contentType = 'image/png';
 
@@ -17,8 +17,8 @@ export default function OpenGraphImage() {
         <div style={{ fontSize: 66, fontWeight: 800, letterSpacing: -5 }}>firn</div>
       </div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-        <div style={{ fontSize: 64, fontWeight: 600, letterSpacing: -2 }}>A clearer view of saving.</div>
-        <div style={{ fontSize: 26, color: '#8AA2AF' }}>Explore plans, track growth, understand the details.</div>
+        <div style={{ fontSize: 64, fontWeight: 600, letterSpacing: -2 }}>A clearer view of investing.</div>
+        <div style={{ fontSize: 26, color: '#8AA2AF' }}>Explore investment plans, track growth, understand the details.</div>
       </div>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
         <div style={{ color: '#8AA2AF', fontSize: 20 }}>Targets are not guarantees. Capital can be lost.</div>
