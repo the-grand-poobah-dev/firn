@@ -3,7 +3,7 @@ import {useEffect,useMemo,useState} from 'react';
 import useEmblaCarousel from 'embla-carousel-react';
 import Link from 'next/link';
 import {useRouter,useSearchParams} from 'next/navigation';
-import {PLANS,dailyRate,hasSufficientWalletBalance,maturityValue,projectionSeries,roiTable,scenarios,splitEqually,type PlanCode} from '@/lib/finance';
+import {PLANS,dailyRate,growth,hasSufficientWalletBalance,maturityValue,projectionSeries,roiTable,scenarios,splitEqually,type PlanCode} from '@/lib/finance';
 import {usd,pct,longDate} from '@/lib/format';
 import {createPositionAction} from '@/app/(app)/save/actions';
 import {Button} from '@/components/ui/Button';
