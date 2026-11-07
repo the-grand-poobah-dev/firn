@@ -6,7 +6,7 @@ export function SignupForm(){
  const consent=f.adult&&f.terms;
  return <div className="space-y-4">
   <div className="flex items-center gap-3 text-[10px] text-muted"><span className="h-px flex-1 bg-line"/>SIGN UP WITH<span className="h-px flex-1 bg-line"/></div>
-  <SocialAuthButtons signup consentGiven={consent}/>
+  <SocialAuthButtons signup/>
   <div className="flex items-center gap-3 text-[10px] text-muted"><span className="h-px flex-1 bg-line"/>OR USE EMAIL<span className="h-px flex-1 bg-line"/></div>
   <form className="space-y-4" onSubmit={ev=>{ev.preventDefault();T(async()=>{const r=await signUpAction({...f,adult:f.adult?'yes':'',terms:f.terms?'yes':''});if(r.error)E(r.error);else location.href='/verify?email='+encodeURIComponent(f.email)})}}>
    {[['Full name','fullName','text'],['Email','email','email'],['Password','password','password']].map(([label,key,type])=><label key={key} className="block text-xs text-muted">{label}<input required type={type} minLength={key==='password'?10:undefined} value={f[key as 'fullName'|'email'|'password']} onChange={ev=>u(key as 'fullName'|'email'|'password',ev.target.value)} className="mt-2 w-full rounded-2xl border border-line bg-card2 px-4 py-3 text-sm text-fg"/></label>)}
