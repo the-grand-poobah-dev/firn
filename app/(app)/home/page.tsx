@@ -6,7 +6,7 @@ import { usd, pct } from '@/lib/format';
 import { FloatingCard } from '@/components/cards/FloatingCard';
 import { Sparkline } from '@/components/charts/Sparkline';
 import { PositionDeck } from '@/components/home/PositionDeck';
-import { EmptyInvestments } from '@/components/home/EmptyInvestments';
+import { EmptySavings } from '@/components/home/EmptySavings';
 import { HomeHeader } from '@/components/home/HomeHeader';
 import { PropertyTile } from '@/components/home/PropertyTile';
 import { CountUp } from '@/components/home/CountUp';
@@ -58,7 +58,7 @@ export default async function HomePage() {
         <div className="flex items-center justify-between"><h2 className="text-base font-semibold">Where it works</h2><Link href="/properties" className="text-xs font-semibold text-accent">Explore all</Link></div>
         <div className="grid grid-cols-2 gap-3">{properties.slice(0, 2).map(property => <PropertyTile key={property.id} property={property}/>)}</div>
       </section>
-    </> : <EmptyInvestments/>}
+    </> : <EmptySavings/>}
     <section className="space-y-3">
       <div className="flex items-center justify-between"><h2 className="text-base font-semibold">Portfolio insights</h2><Link href="/calculator" className="text-xs font-semibold text-accent">Investment calculator →</Link></div>
       <div className="grid grid-cols-3 gap-2">
