@@ -12,8 +12,7 @@ export function SocialAuthButtons(){
  }
  return <div className="space-y-3">
   <button type="button" disabled={!!busy} onClick={()=>start('google')} className="flex min-h-12 w-full items-center justify-center gap-3 rounded-full border border-line bg-card px-4 text-sm font-semibold text-fg disabled:opacity-60"><span aria-hidden="true" className="font-bold text-base">G</span>{busy==='google'?'Connecting…':'Continue with Google'}</button>
-  <button type="button" disabled={!!busy||(signup&&!consentGiven)} onClick={()=>start('facebook')} className="flex min-h-12 w-full items-center justify-center gap-3 rounded-full border border-line bg-card px-4 text-sm font-semibold text-fg disabled:opacity-60"><span aria-hidden="true" className="font-bold text-base text-[#1877F2]">f</span>{busy==='facebook'?'Connecting…':'Continue with Facebook'}</button>
-  {signup&&!consentGiven&&<p className="text-center text-[10px] text-muted">Confirm your age and accept the terms below to enable social sign-up.</p>}
+  <button type="button" disabled={!!busy} onClick={()=>start('facebook')} className="flex min-h-12 w-full items-center justify-center gap-3 rounded-full border border-line bg-card px-4 text-sm font-semibold text-fg disabled:opacity-60"><span aria-hidden="true" className="font-bold text-base text-[#1877F2]">f</span>{busy==='facebook'?'Connecting…':'Continue with Facebook'}</button>
   {error&&<p role="alert" className="text-xs text-neg">{error}</p>}
  </div>;
 }
