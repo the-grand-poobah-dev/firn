@@ -1,8 +1,8 @@
 export type PlanCode = 'six' | 'twelve';
 
 export const PLANS = {
-  six: { name: 'Firn Six', months: 6, apy: 0.50, low: 0.50, high: 0.50 },
-  twelve: { name: 'Firn Twelve', months: 12, apy: 1.00, low: 1.00, high: 1.00 },
+  six: { name: 'Firn Six', months: 6, apy: 0.50, effectiveApy: 1.25, termReturn: 0.50, low: 0.50, high: 0.50 },
+  twelve: { name: 'Firn Twelve', months: 12, apy: 1.00, effectiveApy: 1.00, termReturn: 1.00, low: 1.00, high: 1.00 },
 } as const;
 
 export const MIN_AMOUNT = 500;
@@ -17,7 +17,7 @@ export function dailyRate(apy: number): number { return Math.pow(1 + apy, 1 / 36
 export function growth(principal: number, apy: number, days: number): number { return principal * Math.pow(1 + apy, days / 365); }
 export function periodReturn(apy: number, years: number): number { return Math.pow(1 + apy, years) - 1; }
 export function roiTable(apy: number) { return { daily: dailyRate(apy), monthly: periodReturn(apy, 1 / 12), sixMonth: periodReturn(apy, 0.5), yearly: apy }; }
-export function maturityValue(principal: number, plan: PlanCode): number { const p = PLANS[plan]; return principal * Math.pow(1 + p.apy, p.months / 12); }
+export function maturityValue(principal: number, plan: PlanCode): number { const p = PLANS[plan]; return principal * Math.pow(1 + p.effectiveApy, p.months / 12); }
 
 export interface Scenario { label: 'Optimistic' | 'Expected' | 'Conservative' | 'Weak case'; apy: number; value: number; gain: number }
 export function scenarios(principal: number, plan: PlanCode): Scenario[] {
