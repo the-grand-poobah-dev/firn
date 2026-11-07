@@ -11,8 +11,9 @@ describe('finance calculations', () => {
     expect(maturityValue(10000, 'twelve')).toBeCloseTo(20000, 8);
     expect(maturityValue(5000, 'six')).toBeCloseTo(7500, 8);
   });
-  it('projects the selected 50% six-month and 100% twelve-month target APYs', () => {
-    expect(maturityValue(5000, 'six')).toBeCloseTo(7500, 8);\n    expect(growth(5000, 1.2652, 181)).toBeGreaterThanOrEqual(7500);
+  it('projects the selected 50% six-month and 100% twelve-month term returns', () => {
+    expect(maturityValue(5000, 'six')).toBeCloseTo(7500, 8);
+    expect(growth(5000, 1.2652, 181)).toBeGreaterThanOrEqual(7500);
     expect(growth(5000, 1, 365)).toBeCloseTo(10000, 8);
   });
   it('matches 365 daily compounding steps to annual growth', () => {
