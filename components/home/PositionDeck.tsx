@@ -29,7 +29,7 @@ export function PositionDeck({ positions, variant = 'compact' }: { positions: Po
           const full = variant === 'full';
           return <motion.div key={position.id} whileTap={{ scale: 0.985 }} transition={{ type: 'spring', stiffness: 420, damping: 28 }}
             className={full ? 'min-w-0 flex-[0_0_92%] sm:flex-[0_0_88%]' : 'min-w-0 flex-[0_0_86%] sm:flex-[0_0_78%]'}>
-            <Link href={'/savings/' + position.id} className={'block h-full rounded-[24px] border p-4 shadow-float ' + (full ? 'border-transparent bg-accent text-accent-on' : 'border-line bg-card')}>
+            <Link href={'/investments/' + position.id} className={'block h-full rounded-[24px] border p-4 shadow-float ' + (full ? 'border-transparent bg-accent text-accent-on' : 'border-line bg-card')}>
               <div className="flex items-start justify-between gap-3">
                 <div><p className={'text-xs font-medium ' + (full ? 'text-accent-on/70' : 'text-muted')}>FIXED INVESTMENT</p><h3 className="mt-1 text-lg font-semibold">{position.plan === 'six' ? 'Firn Six' : 'Firn Twelve'}</h3></div>
                 <span className={'rounded-full px-3 py-1 text-xs font-semibold ' + (full ? 'bg-black/10' : 'bg-card2')}>{position.daysLeft} days left</span>
