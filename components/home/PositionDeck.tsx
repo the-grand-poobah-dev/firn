@@ -19,7 +19,7 @@ export function PositionDeck({ positions, variant = 'compact' }: { positions: Po
     return () => { embla.off('select', onSelect); };
   }, [embla, onSelect]);
   if (!positions.length) return null;
-  return <section aria-label="Your savings positions" className="space-y-3">
+  return <section aria-label="Your investment positions" className="space-y-3">
     <div className="overflow-hidden" ref={viewportRef}>
       <div className="flex touch-pan-y gap-3">
         {positions.map(position => {
@@ -31,7 +31,7 @@ export function PositionDeck({ positions, variant = 'compact' }: { positions: Po
             className={full ? 'min-w-0 flex-[0_0_92%] sm:flex-[0_0_88%]' : 'min-w-0 flex-[0_0_86%] sm:flex-[0_0_78%]'}>
             <Link href={'/savings/' + position.id} className={'block h-full rounded-[24px] border p-4 shadow-float ' + (full ? 'border-transparent bg-accent text-accent-on' : 'border-line bg-card')}>
               <div className="flex items-start justify-between gap-3">
-                <div><p className={'text-xs font-medium ' + (full ? 'text-accent-on/70' : 'text-muted')}>FIXED SAVINGS</p><h3 className="mt-1 text-lg font-semibold">{position.plan === 'six' ? 'Firn Six' : 'Firn Twelve'}</h3></div>
+                <div><p className={'text-xs font-medium ' + (full ? 'text-accent-on/70' : 'text-muted')}>FIXED INVESTMENT</p><h3 className="mt-1 text-lg font-semibold">{position.plan === 'six' ? 'Firn Six' : 'Firn Twelve'}</h3></div>
                 <span className={'rounded-full px-3 py-1 text-xs font-semibold ' + (full ? 'bg-black/10' : 'bg-card2')}>{position.daysLeft} days left</span>
               </div>
               <div className="mt-5 flex items-end justify-between gap-3">
@@ -52,8 +52,8 @@ export function PositionDeck({ positions, variant = 'compact' }: { positions: Po
         })}
       </div>
     </div>
-    {positions.length > 1 && <div className="flex justify-center gap-1.5" aria-label="Savings cards">
-      {positions.map((position, index) => <button key={position.id} type="button" aria-label={'Show savings ' + (index + 1)} aria-current={selected === index ? 'true' : undefined}
+    {positions.length > 1 && <div className="flex justify-center gap-1.5" aria-label="Investment cards">
+      {positions.map((position, index) => <button key={position.id} type="button" aria-label={'Show investment ' + (index + 1)} aria-current={selected === index ? 'true' : undefined}
         onClick={() => embla?.scrollTo(index)} className={'h-1.5 rounded-full transition-all ' + (selected === index ? 'w-6 bg-accent' : 'w-1.5 bg-muted/40')} />)}
     </div>}
   </section>;
