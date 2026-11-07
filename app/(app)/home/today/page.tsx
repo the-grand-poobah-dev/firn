@@ -30,7 +30,7 @@ export default async function TodayPage() {
       {rows.length ? rows.map(property => <Card key={property.propertyId} className="flex items-center justify-between gap-3 py-3">
         <div className="min-w-0"><p className="truncate text-sm font-semibold">{property.name}</p><p className="mt-1 text-xs text-muted">{property.city}, {property.country} · {pct(property.targetReturn)}</p></div>
         <strong className="shrink-0 text-sm text-pos money">{usd(property.profit, 2)}</strong>
-      </Card>) : <p className="rounded-xl bg-card p-4 text-sm text-muted">Property allocations will appear once your savings are assigned.</p>}
+      </Card>) : <p className="rounded-xl bg-card p-4 text-sm text-muted">Property allocations will appear once your investments are allocated.</p>}
     </section>
     <p className="text-center text-[10px] leading-5 text-muted">Accrued-so-far is an estimate. Actual earnings are credited at 00:00 UTC.</p>
   </div>;

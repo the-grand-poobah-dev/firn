@@ -19,11 +19,11 @@ export default async function PortfolioPage() {
     <TopBar title="Portfolio" backHref="/home"/>
     <Card className="py-5 text-center">
       <PortfolioDonut/>
-      <p className="mt-3 text-xs text-muted">Each savings deposit is spread across 10 randomly selected active properties.</p>
+      <p className="mt-3 text-xs text-muted">Each investment is spread across 10 randomly selected active properties.</p>
       <p className="mt-1 text-[10px] text-muted">The ring represents the 88-property portfolio universe.</p>
     </Card>
     <section className="space-y-3">
-      <div><h2 className="text-base font-semibold">Your property allocation</h2><p className="mt-1 text-xs text-muted">Properties receiving your active savings are listed first.</p></div>
+      <div><h2 className="text-base font-semibold">Your property allocation</h2><p className="mt-1 text-xs text-muted">Properties receiving your active investments are listed first.</p></div>
       {allocated.map((property,index) => <Card key={property.propertyId} className="flex items-center justify-between gap-3 py-3">
         <div className="flex min-w-0 items-center gap-3"><span className="grid size-8 shrink-0 place-items-center rounded-full bg-card2 text-xs font-semibold text-accent">{index + 1}</span><div className="min-w-0"><p className="truncate text-sm font-semibold">{property.name}</p><p className="mt-1 text-xs text-muted">{property.city}, {property.country} · {pct(property.targetReturn)}</p></div></div>
         <strong className="shrink-0 text-sm money">{usd(property.amount, 2)}</strong>

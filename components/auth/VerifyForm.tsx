@@ -1,15 +1,16 @@
 'use client';
-import{useEffect,useState,useTransition}from'react';
-import{useRouter,useSearchParams}from'next/navigation';
-import{createClient}from'@/lib/supabase/client';
-import{saveSignupCountryAction}from'@/app/auth/actions';
-import{OtpInput}from'@/components/ui/OtpInput';
-import{Keypad}from'@/components/ui/Keypad';
-import{Button}from'@/components/ui/Button';
+import Link from 'next/link';
+import {useSearchParams} from 'next/navigation';
+import {Button} from '@/components/ui/Button';
 export function VerifyForm(){
- const router=useRouter();const email=useSearchParams().get('email')||'';const[code,C]=useState('');const[seconds,S]=useState(30);const[error,E]=useState('');const[notice,N]=useState('');const[busy,T]=useTransition();
- useEffect(()=>{if(seconds<=0)return;const t=setTimeout(()=>S(v=>v-1),1000);return()=>clearTimeout(t)},[seconds]);
- function key(k:string){if(k==='⌫'){C(v=>v.slice(0,-1));return}if(k==='✓'){if(code.length===6)void verify();return}if(/^\\d$/.test(k))C(v=>(v+k).slice(0,6))}
- async function verify(){T(async()=>{const{error}=await createClient().auth.verifyOtp({email,token:code,type:'signup'});if(error)E(error.message);else{const saved=await saveSignupCountryAction();if(saved.error)E(saved.error);else router.push('/profile')}})}
- return <div className="space-y-5"><p className="text-sm text-muted">Enter the six-digit confirmation code sent to {email||'your email'}.</p><OtpInput value={code} onChange={C}/><Keypad onKey={key}/><Button className="w-full" disabled={code.length!==6||busy} onClick={verify}>Verify email</Button><button className="w-full text-xs text-accent disabled:text-muted" disabled={seconds>0} onClick={async()=>{const{error}=await createClient().auth.resend({type:'signup',email});if(error)E(error.message);else{E('');N('A new code has been sent.');S(30)}}}>{seconds?'Resend code in 00:'+String(seconds).padStart(2,'0'):'Resend code'}</button>{error&&<p role="alert" className="text-xs text-neg">{error}</p>}{notice&&<p role="status" className="text-xs text-pos">{notice}</p>}</div>;
+ const email=useSearchParams().get('email')||'your email address';
+ return <div className="space-y-5">
+  <div className="rounded-2xl border border-line bg-card2 p-4">
+   <p className="text-sm font-semibold">Your confirmation link is on its way</p>
+   <p className="mt-2 text-sm leading-relaxed text-muted">We sent a confirmation link to <strong className="text-fg">{email}</strong>. Open that email and select the confirmation link to activate your account. You do not need to enter a code.</p>
+  </div>
+  <p className="text-xs text-muted">If it is not in your inbox, check your spam or promotions folder. You can request another confirmation email from the sign-up screen.</p>
+  <Link href="/login" className="block"><Button className="w-full">Continue to sign in</Button></Link>
+  <p className="text-center text-xs text-muted">Having trouble? <a className="text-accent" href={`mailto:${process.env.NEXT_PUBLIC_SUPPORT_EMAIL||'admin@firn.investing'}`}>Contact support</a>.</p>
+ </div>;
 }

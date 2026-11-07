@@ -1,8 +1,8 @@
 export type PlanCode = 'six' | 'twelve';
 
 export const PLANS = {
-  six: { name: 'Firn Six', months: 6, apy: 0.105, low: 0.09, high: 0.12 },
-  twelve: { name: 'Firn Twelve', months: 12, apy: 0.13, low: 0.10, high: 0.15 },
+  six: { name: 'Firn Six', months: 6, apy: 0.50, low: 0.50, high: 0.50 },
+  twelve: { name: 'Firn Twelve', months: 12, apy: 1.00, low: 1.00, high: 1.00 },
 } as const;
 
 export const MIN_AMOUNT = 500;

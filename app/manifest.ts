@@ -4,7 +4,7 @@ export default function manifest(): MetadataRoute.Manifest {
   return {
     name: 'Firn',
     short_name: 'firn',
-    description: 'A simulated savings experience.',
+    description: 'A simulated property investment experience.',
     start_url: '/',
     scope: '/',
     display: 'standalone',

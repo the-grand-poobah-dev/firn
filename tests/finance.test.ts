@@ -8,8 +8,12 @@ describe('finance calculations', () => {
   it('calculates effective daily rate', () => expect(dailyRate(0.13)).toBeCloseTo(0.00033490, 6));
   it('calculates annual growth', () => expect(growth(10000, 0.13, 365)).toBeCloseTo(11300, 8));
   it('calculates plan maturity values', () => {
-    expect(maturityValue(10000, 'twelve')).toBeCloseTo(11300, 8);
-    expect(maturityValue(5000, 'six')).toBeCloseTo(5000 * Math.pow(1.105, 0.5), 8);
+    expect(maturityValue(10000, 'twelve')).toBeCloseTo(20000, 8);
+    expect(maturityValue(5000, 'six')).toBeCloseTo(5000 * Math.pow(1.5, 0.5), 8);
+  });
+  it('projects the selected 50% six-month and 100% twelve-month target APYs', () => {
+    expect(growth(5000, 0.5, 182.5)).toBeCloseTo(5000 * Math.sqrt(1.5), 8);
+    expect(growth(5000, 1, 365)).toBeCloseTo(10000, 8);
   });
   it('matches 365 daily compounding steps to annual growth', () => {
     const step = 1 + dailyRate(0.13);
