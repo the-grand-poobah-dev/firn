@@ -1,11 +1,11 @@
 'use client';
-import {useEffect,useState} from 'react';
+import {useEffect,useState,type FormEvent} from 'react';
 import {Button} from '@/components/ui/Button';
 async function hash(pin:string){const digest=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(pin));return Array.from(new Uint8Array(digest)).map(x=>x.toString(16).padStart(2,'0')).join('');}
 export function AppPinForm(){
  const [enabled,setEnabled]=useState(false);const [current,setCurrent]=useState('');const [next,setNext]=useState('');const [confirm,setConfirm]=useState('');const [error,setError]=useState('');const [saved,setSaved]=useState(false);
  useEffect(()=>setEnabled(localStorage.getItem('firn-app-lock-enabled')==='true'&&!!localStorage.getItem('firn-app-lock-hash')),[]);
- async function submit(e:React.FormEvent){e.preventDefault();setError('');setSaved(false);if(!/^\d{4}$/.test(next)||!/^\d{4}$/.test(confirm)){setError('Choose and confirm a four-digit PIN.');return;}if(next!==confirm){setError('The new PINs do not match.');return;}const existing=localStorage.getItem('firn-app-lock-hash');if(existing&&await hash(current)!==existing){setError('Your current PIN is incorrect.');return;}localStorage.setItem('firn-app-lock-hash',await hash(next));localStorage.setItem('firn-app-lock-enabled','true');setEnabled(true);setCurrent('');setNext('');setConfirm('');setSaved(true);}
+ async function submit(e:FormEvent){e.preventDefault();setError('');setSaved(false);if(!/^\d{4}$/.test(next)||!/^\d{4}$/.test(confirm)){setError('Choose and confirm a four-digit PIN.');return;}if(next!==confirm){setError('The new PINs do not match.');return;}const existing=localStorage.getItem('firn-app-lock-hash');if(existing&&await hash(current)!==existing){setError('Your current PIN is incorrect.');return;}localStorage.setItem('firn-app-lock-hash',await hash(next));localStorage.setItem('firn-app-lock-enabled','true');setEnabled(true);setCurrent('');setNext('');setConfirm('');setSaved(true);}
  function remove(){localStorage.removeItem('firn-app-lock-hash');localStorage.removeItem('firn-app-lock-enabled');setEnabled(false);setCurrent('');setNext('');setConfirm('');setSaved(true);}
  return <div className="space-y-5">
   <div className="rounded-2xl border border-line bg-card2 p-4"><div className="flex items-center gap-3"><span className="grid size-10 place-items-center rounded-full bg-accent/15 text-accent">⌑</span><div><p className="text-sm font-semibold">{enabled?'App PIN is enabled on this device':'No app PIN on this device'}</p><p className="mt-1 text-xs text-muted">A local convenience lock, not your account password.</p></div></div></div>
