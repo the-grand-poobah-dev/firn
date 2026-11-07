@@ -19,13 +19,13 @@ const mono = localFont({
 
 export const metadata: Metadata = {
   title: { default: 'Firn', template: '%s · Firn' },
-  description: 'A simulated savings experience. Targets are not guarantees; capital can be lost.',
+  description: 'A simulated property investment experience. Targets are not guarantees; capital can be lost.',
   applicationName: 'Firn',
   manifest: '/manifest.webmanifest',
   icons: { icon: '/icon.svg', apple: '/icon-192.svg' },
   openGraph: {
     title: 'Firn',
-    description: 'A simulated savings experience. Targets are not guarantees; capital can be lost.',
+    description: 'A simulated property investment experience. Targets are not guarantees; capital can be lost.',
     images: ['/opengraph-image'],
     type: 'website',
   },
