@@ -1,7 +1,7 @@
 'use client';
 import {useState} from 'react';
 import {createClient} from '@/lib/supabase/client';
-export function SocialAuthButtons({signup=false}:{signup?:boolean}){
+export function SocialAuthButtons(){
  const[busy,setBusy]=useState('');
  const[error,setError]=useState('');
  async function start(provider:'google'|'facebook'){
