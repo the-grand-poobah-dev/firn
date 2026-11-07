@@ -60,7 +60,7 @@ export default async function HomePage() {
       </section>
     </> : <EmptySavings/>}
     <section className="space-y-3">
-      <div className="flex items-center justify-between"><h2 className="text-base font-semibold">Portfolio insights</h2><Link href="/calculator" className="text-xs font-semibold text-accent">Investment calculator →</Link></div>
+      <div className="flex items-center justify-between"><h2 className="text-base font-semibold">Portfolio insights</h2><Link href="/home/calculator" className="text-xs font-semibold text-accent">Investment calculator →</Link></div>
       <div className="grid grid-cols-3 gap-2">
         <Link href="/home/today" className="rounded-2xl border border-line bg-card p-3 text-center"><Icon name="sun" size={18} className="mx-auto text-accent"/><span className="mt-2 block text-xs font-semibold">Today</span></Link>
         <Link href="/home/portfolio" className="rounded-2xl border border-line bg-card p-3 text-center"><Icon name="chart" size={18} className="mx-auto text-accent"/><span className="mt-2 block text-xs font-semibold">Portfolio</span></Link>
