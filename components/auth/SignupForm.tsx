@@ -3,7 +3,6 @@ import{useState,useTransition}from'react';import Link from'next/link';import{sig
 const countries=['Kenya','Uganda','Tanzania','Rwanda','Nigeria','Ghana','South Africa','United States','United Kingdom','Other'];
 export function SignupForm(){
  const[f,S]=useState({fullName:'',email:'',password:'',country:'Kenya',adult:false,terms:false});const[e,E]=useState('');const[p,T]=useTransition();const u=(k:keyof typeof f,v:string|boolean)=>S(x=>({...x,[k]:v}));
- const consent=f.adult&&f.terms;
  return <div className="space-y-4">
   <div className="flex items-center gap-3 text-[10px] text-muted"><span className="h-px flex-1 bg-line"/>SIGN UP WITH<span className="h-px flex-1 bg-line"/></div>
   <SocialAuthButtons/>
