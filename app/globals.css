@@ -20,7 +20,7 @@
 * { box-sizing: border-box; scrollbar-width: none; -ms-overflow-style: none; }
 *::-webkit-scrollbar { display: none; width: 0; height: 0; }
 html, body { overflow-x: hidden; }
-html { background: var(--bg); overflow-x: clip; }\nbody { overflow-x: clip; }
+html { background: var(--bg); }
 body { margin:0; background:var(--bg); color:var(--fg); font-family:var(--font-ui),system-ui,sans-serif; font-size:14px; -webkit-font-smoothing:antialiased; }
 button,input,select,textarea { font:inherit; }
 button:focus-visible,a:focus-visible,input:focus-visible { outline:2px solid var(--accent); outline-offset:3px; }
