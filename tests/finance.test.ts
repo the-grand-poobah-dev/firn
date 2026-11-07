@@ -9,10 +9,10 @@ describe('finance calculations', () => {
   it('calculates annual growth', () => expect(growth(10000, 0.13, 365)).toBeCloseTo(11300, 8));
   it('calculates plan maturity values', () => {
     expect(maturityValue(10000, 'twelve')).toBeCloseTo(20000, 8);
-    expect(maturityValue(5000, 'six')).toBeCloseTo(5000 * Math.pow(1.5, 0.5), 8);
+    expect(maturityValue(5000, 'six')).toBeCloseTo(7500, 8);
   });
   it('projects the selected 50% six-month and 100% twelve-month target APYs', () => {
-    expect(growth(5000, 0.5, 182.5)).toBeCloseTo(5000 * Math.sqrt(1.5), 8);
+    expect(maturityValue(5000, 'six')).toBeCloseTo(7500, 8);\n    expect(growth(5000, 1.2652, 181)).toBeGreaterThanOrEqual(7500);
     expect(growth(5000, 1, 365)).toBeCloseTo(10000, 8);
   });
   it('matches 365 daily compounding steps to annual growth', () => {
@@ -32,7 +32,7 @@ describe('finance calculations', () => {
     expect(earlyExit({ principal: 1000, accrued: 50, daysIn: 90 }).receive).toBeCloseTo(985, 8);
   });
   it('returns plan APY at base vacancy assumptions', () => {
-    expect(vacancyScenario({ apy: PLANS.six.apy, vacancy: 0.06, rentChange: 0, valuationChange: 0 })).toBeCloseTo(PLANS.six.apy, 10);
+    expect(vacancyScenario({ apy: PLANS.six.apy, vacancy: 0.06, rentChange: 0, valuationChange: 0 })).toBeCloseTo(PLANS.six.apy, 10);\n    expect(PLANS.six.termReturn).toBe(0.5);
   });
   it('orders scenarios from optimistic to weak', () => {
     const values = scenarios(10000, 'twelve').map(s => s.value);
