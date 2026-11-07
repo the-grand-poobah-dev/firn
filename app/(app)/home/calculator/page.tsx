@@ -1,0 +1,1 @@
+import{TopBar}from'@/components/app/TopBar';import{InvestmentCalculator}from'@/components/calculator/InvestmentCalculator';export default function CalculatorPage(){return <div className="space-y-5"><TopBar title="Investment calculator" backHref="/home"/><InvestmentCalculator/></div>}

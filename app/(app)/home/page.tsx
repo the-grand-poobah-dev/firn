@@ -28,15 +28,15 @@ export default async function HomePage() {
     redirect(profile.kyc_status === 'in_review' || prefs.onboarding_profile_complete === true ? '/kyc' : '/profile');
   }
   const name = profile.full_name?.trim() || user.email?.split('@')[0] || 'Investor';
-  const hasSavings = portfolio.positions.length > 0;
+  const hasInvestments = portfolio.positions.length > 0;
   const todayRate = portfolio.totals.value > 0 ? portfolio.totals.todayProfit / portfolio.totals.value : 0;
   const spark = portfolio.cumulativeValueSeries.map(point => point.value);
   return <div className="space-y-6">
     <HomeHeader name={name} unread={(unread ?? 0) > 0}/>
-    {hasSavings ? <>
+    {hasInvestments ? <>
       <FloatingCard className="p-4">
         <div className="flex items-start justify-between">
-          <div><p className="label">TOTAL SAVINGS VALUE</p><p className="mt-2 text-[34px] font-semibold tracking-tight money"><CountUp value={portfolio.totals.value} format={n => usd(n, 2)}/></p></div>
+          <div><p className="label">TOTAL INVESTMENT VALUE</p><p className="mt-2 text-[34px] font-semibold tracking-tight money"><CountUp value={portfolio.totals.value} format={n => usd(n, 2)}/></p></div>
           <Link href="/home/portfolio" className="grid size-9 place-items-center rounded-full bg-card2 text-accent" aria-label="View portfolio"><Icon name="arrow" size={18}/></Link>
         </div>
         <div className="mt-3 flex items-center gap-2 text-xs">
@@ -51,7 +51,7 @@ export default async function HomePage() {
         </div>
       </FloatingCard>
       <section className="space-y-3">
-        <div className="flex items-center justify-between"><h2 className="text-base font-semibold">Your savings</h2><Link href="/savings" className="text-xs font-semibold text-accent">See all</Link></div>
+        <div className="flex items-center justify-between"><h2 className="text-base font-semibold">Your investments</h2><Link href="/investments" className="text-xs font-semibold text-accent">See all</Link></div>
         <PositionDeck positions={portfolio.positions}/>
       </section>
       <section className="space-y-3">
@@ -60,7 +60,7 @@ export default async function HomePage() {
       </section>
     </> : <EmptySavings/>}
     <section className="space-y-3">
-      <h2 className="text-base font-semibold">Portfolio insights</h2>
+      <div className="flex items-center justify-between"><h2 className="text-base font-semibold">Portfolio insights</h2><Link href="/home/calculator" className="text-xs font-semibold text-accent">Investment calculator →</Link></div>
       <div className="grid grid-cols-3 gap-2">
         <Link href="/home/today" className="rounded-2xl border border-line bg-card p-3 text-center"><Icon name="sun" size={18} className="mx-auto text-accent"/><span className="mt-2 block text-xs font-semibold">Today</span></Link>
         <Link href="/home/portfolio" className="rounded-2xl border border-line bg-card p-3 text-center"><Icon name="chart" size={18} className="mx-auto text-accent"/><span className="mt-2 block text-xs font-semibold">Portfolio</span></Link>

@@ -1,7 +1,9 @@
 name: CI
 on:
+  push:
+    branches: [feat/onboarding-property-refresh]
   pull_request:
-    branches: [main]
+    branches: [main, chore/release]
 jobs:
   verify:
     runs-on: ubuntu-latest

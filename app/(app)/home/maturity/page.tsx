@@ -10,11 +10,11 @@ export const dynamic = 'force-dynamic';
 export default async function MaturityPage() {
   await requireUser();
   const portfolio = await getPortfolio();
-  if (!portfolio.positions.length) return <div className="space-y-5"><TopBar title="Maturity" backHref="/savings"/><EmptySavings/></div>;
+  if (!portfolio.positions.length) return <div className="space-y-5"><TopBar title="Maturity" backHref="/investments"/><EmptySavings/></div>;
   const positions = [...portfolio.positions].sort((a,b) => a.daysLeft-b.daysLeft);
   return <div className="space-y-5">
-    <TopBar title="Maturity timeline" backHref="/savings"/>
-    <p className="text-sm leading-6 text-muted">Track when each active savings position reaches its planned maturity date.</p>
+    <TopBar title="Maturity timeline" backHref="/investments"/>
+    <p className="text-sm leading-6 text-muted">Track when each active investment position reaches its planned maturity date.</p>
     <div className="space-y-3">{positions.map(position=><Card key={position.id} className="relative overflow-hidden">
       <div className="absolute bottom-0 left-0 top-0 w-1 bg-accent"/>
       <div className="flex items-start justify-between gap-3 pl-2">
