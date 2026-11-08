@@ -18,10 +18,10 @@ function filterRows(rows:PropertyRecord[],query:Search){
   return countryOk&&kindOk&&minOk&&maxOk&&statusOk;
  });
 }
-export default async function PropertiesPage({searchParams}:{searchParams:Search}){
- const all=await getProperties();const rows=filterRows(all,searchParams);
+export default async function PropertiesPage({searchParams}:{searchParams:Promise<Search>}){
+ const query=await searchParams;const all=await getProperties();const rows=filterRows(all,query);
  const chips=['All',...Array.from(new Set(all.map(p=>p.country))).sort((a,b)=>a.localeCompare(b))];
- const active=first(searchParams.country)??'All';const featured=rows.slice(0,8);
+ const active=first(query.country)??'All';const featured=rows.slice(0,8);
  return <div className="space-y-6">
   <TopBar title="Explore" right={<div className="flex items-center gap-2"><Link href="/home/search" aria-label="Search properties" className="grid size-9 place-items-center rounded-full border border-line bg-card"><Icon name="search" size={17}/></Link><Link href="/home/calculator" aria-label="Investment calculator" className="grid size-9 place-items-center rounded-full border border-line bg-card"><Icon name="chart" size={17}/></Link><Link href="/properties/filters" className="rounded-full border border-line bg-card px-3 py-2 text-xs">Filters</Link></div>}/>
   <section><div className="mb-3 flex items-end justify-between"><div><p className="label">THE FIRN COLLECTION</p><h2 className="mt-1 text-lg font-semibold">Explore properties</h2></div><span className="text-xs text-muted">{rows.length} assets</span></div><ExploreCollection properties={rows} countries={chips.slice(1)} activeCountry={active}/></section>
