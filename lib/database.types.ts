@@ -23,6 +23,7 @@ export type Database = {
       accrue_daily: { Args: never; Returns: undefined };
       consume_deposit_rate_limit: { Args: { p_user_id: string }; Returns: boolean };
       credit_deposit: { Args: { p_deposit_id: string }; Returns: string };
+      review_deposit: { Args: { p_action: string; p_actor_id: string; p_amount?: number | null; p_deposit_id: string; p_reason?: string | null }; Returns: string | null };
       create_position: { Args: { p_amount: number; p_plan: Database["public"]["Enums"]["plan_code"] }; Returns: string };
       create_position_idempotent: { Args: { p_amount: number; p_key: string; p_plan: Database["public"]["Enums"]["plan_code"] }; Returns: string };
       deposit_demo: { Args: { p_amount: number; p_method: string }; Returns: number };
