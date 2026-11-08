@@ -84,13 +84,17 @@ export async function verifyTronUsdtTransfer(txid: string, expectedRecipient: st
   const acceptedAddresses = [...new Set((process.env.ACCEPTED_DEPOSIT_ADDRESSES ?? '')
     .split(',').map((address) => address.trim()).filter(Boolean))];
   const contract = process.env.USDT_TRC20_CONTRACT?.trim() || DEFAULT_CONTRACT;
-  if (!apiKey || !expectedRecipient || !contract || !acceptedAddresses.length) {
+  if (!apiKey || !expectedRecipient || !contract) {
     throw new Error('TRON verification is not configured');
   }
+  // Never permit an operator typo or override to silently switch the accepted asset.
+  if (contract !== DEFAULT_CONTRACT) throw new Error('Configured USDT contract does not match the official TRON USDT contract');
   if (!isValidTronAddress(expectedRecipient) ||
-      !acceptedAddresses.every(isValidTronAddress) ||
-      !acceptedAddresses.includes(expectedRecipient)) {
-    throw new Error('Deposit recipient is invalid or not in ACCEPTED_DEPOSIT_ADDRESSES');
+      (acceptedAddresses.length > 0 && (
+        !acceptedAddresses.every(isValidTronAddress) ||
+        !acceptedAddresses.includes(expectedRecipient)
+      ))) {
+    throw new Error('Deposit recipient is invalid or not in the configured address allowlist');
   }
   const recipientHex = addressToHex(expectedRecipient);
   const contractHex = addressToHex(contract);
