@@ -24,7 +24,6 @@ type DepositRow = {
 
 type Props = {
   address: string | null;
-  unavailable: boolean;
   minimumDeposit: number;
   initialDeposits: DepositRow[];
   initialStatusError: string | null;
@@ -52,7 +51,7 @@ function statusTone(status: DepositStatus) {
   return 'border-line bg-card2 text-muted';
 }
 
-export function UsdtDepositClient({ address, unavailable, minimumDeposit, initialDeposits, initialStatusError, returnTo }: Props) {
+export function UsdtDepositClient({ address, minimumDeposit, initialDeposits, initialStatusError, returnTo }: Props) {
   const [copied, setCopied] = useState(false);
   const [txid, setTxid] = useState('');
   const [amount, setAmount] = useState('');
