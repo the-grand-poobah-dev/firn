@@ -1,2 +1,12 @@
-import {NextResponse} from 'next/server';import {createClient} from '@/lib/supabase/server';import {walletDepositSchema} from '@/lib/wallet-validation';import {allowWalletWrite} from '@/lib/wallet-rate-limit';import {initiateDeposit} from '@/lib/wallet-payments';
-export async function POST(req:Request){const sb=await createClient(),{data:{user}}=await sb.auth.getUser();if(!user)return NextResponse.json({error:'Please sign in.'},{status:401});if(!allowWalletWrite(user.id))return NextResponse.json({error:'Too many wallet writes. Try again in one minute.'},{status:429});let body:unknown;try{body=await req.json();}catch{return NextResponse.json({error:'Invalid request.'},{status:400});}const p=walletDepositSchema.safeParse(body);if(!p.success)return NextResponse.json({error:p.error.issues[0]?.message||'Invalid deposit.'},{status:400});try{return NextResponse.json(await initiateDeposit(user.id,p.data),{status:201,headers:{'Cache-Control':'no-store'}});}catch(e){return NextResponse.json({error:e instanceof Error?e.message:'Payment could not start.'},{status:503});}}
+import { NextResponse } from 'next/server';
+
+export const dynamic = 'force-dynamic';
+
+// Legacy provider checkout routes are deliberately disabled. USDT TRC20 claims
+// must use /api/deposits/usdt-trc20/verify; M-Pesa, card and bank are not live.
+export async function POST() {
+  return NextResponse.json(
+    { error: 'This payment method is unavailable. Use the dedicated USDT TRC20 deposit flow when deposits are enabled.' },
+    { status: 410, headers: { 'Cache-Control': 'no-store' } },
+  );
+}
