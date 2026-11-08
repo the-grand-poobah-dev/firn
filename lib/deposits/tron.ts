@@ -47,6 +47,16 @@ function base58Decode(value: string): Buffer {
   if (!checksum(payload).equals(body.subarray(-4))) throw new Error('Invalid base58 checksum');
   return payload;
 }
+export function isValidTronAddress(address: string): boolean {
+  if (!/^T[1-9A-HJ-NP-Za-km-z]{33}$/.test(address)) return false;
+  try {
+    const payload = base58Decode(address);
+    return payload.length === 21 && payload[0] === 0x41;
+  } catch {
+    return false;
+  }
+}
+
 function base58Encode(payload: Buffer): string {
   const bytes = Buffer.concat([payload, checksum(payload)]);
   let n = BigInt('0x' + bytes.toString('hex'));
@@ -68,7 +78,7 @@ function logAddressToHex(address: string): string {
   return clean.length === 40 ? '41' + clean : clean;
 }
 
-export async function verifyTronUsdtTransfer(txid: string): Promise<TronVerification> {
+export async function verifyTronUsdtTransfer(txid: string, expectedRecipient: string): Promise<TronVerification> {
   if (!HEX64.test(txid)) return { state: 'rejected', reason: 'Invalid transaction ID format.' };
   const apiKey = process.env.TRONGRID_API_KEY;
   const recipient = process.env.DEPOSIT_USDT_TRC20_ADDRESS?.trim() ?? '';
@@ -135,7 +145,7 @@ export async function verifyTronUsdtTransfer(txid: string): Promise<TronVerifica
       state: 'verified',
       amount: unitsToDecimal(total),
       fromAddress: toWallet[0].fromAddress,
-      toAddress: recipient,
+      toAddress: toWallet[0].toAddress,
       blockTimestamp: new Date(timestamp).toISOString(),
       blockNumber,
     };
