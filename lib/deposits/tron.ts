@@ -78,7 +78,7 @@ function logAddressToHex(address: string): string {
   return clean.length === 40 ? '41' + clean : clean;
 }
 
-export async function verifyTronUsdtTransfer(txid: string, expectedRecipient: string): Promise<TronVerification> {
+export async function verifyTronUsdtTransfer(txid: string, expectedRecipient: string, options: { enforceMinimum?: boolean } = {}): Promise<TronVerification> {
   if (!HEX64.test(txid)) return { state: 'rejected', reason: 'Invalid transaction ID format.' };
   const apiKey = process.env.TRONGRID_API_KEY;
   const acceptedAddresses = [...new Set((process.env.ACCEPTED_DEPOSIT_ADDRESSES ?? '')
@@ -142,8 +142,10 @@ export async function verifyTronUsdtTransfer(txid: string, expectedRecipient: st
     const toWallet = transfers.filter(t => addressToHex(t.toAddress) === recipientHex);
     if (!toWallet.length) return { state: 'rejected', reason: 'The USDT transfer was not sent to the configured FIRN receiving address.' };
     const total = toWallet.reduce((sum, transfer) => sum + transfer.units, 0n);
-    const minimum = decimalToUnits(process.env.MIN_DEPOSIT_USDT ?? '10');
-    if (total < minimum) return { state: 'rejected', reason: 'The verified USDT transfer is below the minimum deposit.' };
+    if (options.enforceMinimum !== false) {
+      const minimum = decimalToUnits(process.env.MIN_DEPOSIT_USDT ?? '10');
+      if (total < minimum) return { state: 'rejected', reason: 'The verified USDT transfer is below the minimum deposit.' };
+    }
     const timestamp = Number(receipt.blockTimeStamp);
     const blockNumber = Number(receipt.blockNumber);
     if (!Number.isFinite(timestamp) || timestamp <= 0 || !Number.isSafeInteger(blockNumber) || blockNumber <= 0) {
