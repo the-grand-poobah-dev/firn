@@ -152,7 +152,7 @@ returns uuid
 language plpgsql
 security definer
 set search_path = public, pg_temp
-as $
+as $$
 declare v_deposit public.deposits%rowtype; v_ledger_id uuid;
 begin
   if coalesce(auth.role(), '') <> 'service_role' then raise exception 'service role required'; end if;
@@ -186,7 +186,7 @@ begin
     raise exception 'Unsupported review action';
   end if;
 end;
-$;
+$$;
 revoke all on function public.review_deposit(uuid,uuid,text,numeric,text) from public, anon, authenticated;
 grant execute on function public.review_deposit(uuid,uuid,text,numeric,text) to service_role;
 
