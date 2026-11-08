@@ -81,10 +81,18 @@ function logAddressToHex(address: string): string {
 export async function verifyTronUsdtTransfer(txid: string, expectedRecipient: string): Promise<TronVerification> {
   if (!HEX64.test(txid)) return { state: 'rejected', reason: 'Invalid transaction ID format.' };
   const apiKey = process.env.TRONGRID_API_KEY;
-  const recipient = process.env.DEPOSIT_USDT_TRC20_ADDRESS?.trim() ?? '';
+  const acceptedAddresses = [...new Set((process.env.ACCEPTED_DEPOSIT_ADDRESSES ?? '')
+    .split(',').map((address) => address.trim()).filter(Boolean))];
   const contract = process.env.USDT_TRC20_CONTRACT?.trim() || DEFAULT_CONTRACT;
-  if (!apiKey || !recipient || !contract) throw new Error('TRON verification is not configured');
-  const recipientHex = addressToHex(recipient);
+  if (!apiKey || !expectedRecipient || !contract || !acceptedAddresses.length) {
+    throw new Error('TRON verification is not configured');
+  }
+  if (!isValidTronAddress(expectedRecipient) ||
+      !acceptedAddresses.every(isValidTronAddress) ||
+      !acceptedAddresses.includes(expectedRecipient)) {
+    throw new Error('Deposit recipient is invalid or not in ACCEPTED_DEPOSIT_ADDRESSES');
+  }
+  const recipientHex = addressToHex(expectedRecipient);
   const contractHex = addressToHex(contract);
   if (!/^41[0-9a-f]{40}$/.test(recipientHex) || !/^41[0-9a-f]{40}$/.test(contractHex)) throw new Error('Invalid configured TRON address');
 
