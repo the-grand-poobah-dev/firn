@@ -11,6 +11,8 @@ export type TronVerification =
   | { state: 'rejected'; reason: string }
   | { state: 'verified'; amount: string; fromAddress: string; toAddress: string; blockTimestamp: string; blockNumber: number };
 
+export function isDuplicateTxidError(error: { code?: string } | null | undefined): boolean { return error?.code === '23505'; }
+
 export function decimalToUnits(value: string, decimals = 6): bigint {
   if (!/^\d+(?:\.\d+)?$/.test(value)) throw new Error('Invalid decimal amount');
   const [whole, fraction = ''] = value.split('.');
