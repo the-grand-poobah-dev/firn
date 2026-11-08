@@ -117,7 +117,7 @@ set search_path = public, pg_temp
 as $$
 declare v_deposit public.deposits%rowtype; v_ledger_id uuid;
 begin
-  if coalesce(current_setting('request.jwt.claim.role', true), '') <> 'service_role' then
+  if coalesce(auth.role(), '') <> 'service_role' then
     raise exception 'service role required';
   end if;
   select * into v_deposit from public.deposits where id = p_deposit_id for update;
