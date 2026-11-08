@@ -17,8 +17,9 @@ function filterRows(rows:PropertyRecord[],query:Search) {
   });
 }
 export default async function PropertiesPage({searchParams}:{searchParams:Promise<Search>}) {
+  const query=await searchParams;
   const all=await getProperties();
-  const rows=filterRows(all,searchParams);
+  const rows=filterRows(all,query);
   const chips=['All','Dubai','Italy','Spain','Portugal','Swiss'];
   const active=first(query.country)??'All';
   const featured=rows.slice(0,8);
