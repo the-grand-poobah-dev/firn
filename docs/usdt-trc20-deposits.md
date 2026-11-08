@@ -16,7 +16,7 @@ The receiving address is read only from the server-side `DEPOSIT_USDT_TRC20_ADDR
 |---|---|---|
 | `DEPOSIT_USDT_TRC20_ADDRESS` | Current receiving wallet (valid TRON Base58Check address) | FIRN operator |
 | `ACCEPTED_DEPOSIT_ADDRESSES` | Comma-separated allowlist containing the current wallet and any older wallets with pending deposits | FIRN operator |
-| `USDT_DEPOSITS_ENABLED` | Deposit kill switch; `true` or unset enables deposits, `false` disables new submissions | FIRN operator |
+| `USDT_DEPOSITS_ENABLED` | Fail-closed kill switch; only explicit `true` enables verification and rechecks | FIRN operator |
 | `USDT_TRC20_CONTRACT` | Official contract above | FIRN operator |
 | `MIN_DEPOSIT_USDT` | Minimum verified amount, default 10 | FIRN operator |
 | `TRONGRID_API_KEY` | Authenticated TronGrid reads | FIRN operator |
@@ -30,6 +30,7 @@ Never add service-role keys, TronGrid API keys, or cron secrets to Git, client-s
 Apply these migrations in order to the **development database first**:
 1. `supabase/migrations/20261108150000_secure_usdt_trc20_deposits_admin.sql` creates the deposit/admin foundation.
 2. `supabase/migrations/20261108193000_pin_usdt_deposit_recipients.sql` pins the receiving address per deposit, enforces the pinned-recipient check before crediting, and disables manual admin crediting.
+3. `supabase/migrations/20261108210000_revoke_demo_deposit_credit.sql` revokes client execution of the legacy `deposit_demo` wallet-credit RPC and direct client execution of the auth profile trigger function.
 
 The first migration adds:
 - `profiles.is_admin`, with a trigger preventing self-promotion
@@ -65,10 +66,11 @@ Vercel Hobby supports daily cron schedules only. The configured cron is daily at
 1. Apply migration to development Supabase and verify RLS with normal-user and admin sessions.
 2. Configure all required environment variables in Vercel Preview and Production (never expose secrets publicly). `ACCEPTED_DEPOSIT_ADDRESSES` must include `DEPOSIT_USDT_TRC20_ADDRESS` and every older pinned recipient that still needs rechecking.
 3. Confirm the configured wallet address and contract match the operator's self-custody wallet and the official TRON USDT contract.
-4. Run CI: lint, TypeScript, mocked TronGrid tests, and production build.
-5. Test success, look-alike token, wrong recipient, underpayment, duplicate TXID, unconfirmed transaction, timeout, retry, rejected manual approval, rejection, and double-credit attempts.
-6. Verify exactly one wallet ledger row per deposit and that its amount equals `verified_amount`, not `claimed_amount`.
-7. Only then request explicit approval to apply the migration to production and merge/deploy.
+4. Keep `USDT_DEPOSITS_ENABLED` unset (disabled) until the sender wallet is cryptographically bound to the signed-in FIRN user. A public TXID alone is not proof of who sent the funds.
+5. Run CI: lint, TypeScript, mocked TronGrid tests, and production build.
+6. Test success, look-alike token, wrong recipient, underpayment, duplicate TXID, unconfirmed transaction, timeout, retry, rejected manual approval, rejection, and double-credit attempts.
+7. Verify exactly one wallet ledger row per deposit and that its amount equals `verified_amount`, not `claimed_amount`.
+8. Only then request explicit approval to apply the migration to production and merge/deploy.
 
 **Do not accept real deposits until all pre-launch checks pass.**
 
