@@ -1,7 +1,10 @@
 'use client';
 
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
-import { QRCodeSVG } from 'qrcode.react';
+import dynamic from 'next/dynamic';
+import Link from 'next/link';
+import { QRCodeSVGProps } from 'qrcode.react';
+const QRCodeSVG = dynamic(() => import('qrcode.react').then((module) => module.QRCodeSVG), { ssr: false });
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { Icon } from '@/components/ui/Icon';
@@ -24,6 +27,7 @@ type Props = {
   minimumDeposit: number;
   initialDeposits: DepositRow[];
   initialStatusError: string | null;
+  returnTo: string;
 };
 
 const TXID_PATTERN = /^[a-fA-F0-9]{64}$/;
@@ -47,7 +51,7 @@ function statusTone(status: DepositStatus) {
   return 'border-line bg-card2 text-muted';
 }
 
-export function UsdtDepositClient({ address, minimumDeposit, initialDeposits, initialStatusError }: Props) {
+export function UsdtDepositClient({ address, minimumDeposit, initialDeposits, initialStatusError, returnTo }: Props) {
   const [copied, setCopied] = useState(false);
   const [txid, setTxid] = useState('');
   const [amount, setAmount] = useState('');
@@ -131,6 +135,7 @@ export function UsdtDepositClient({ address, minimumDeposit, initialDeposits, in
 
   return (
     <div className="space-y-5">
+      <Link href={returnTo} className="inline-flex min-h-9 items-center gap-2 text-sm text-muted hover:text-fg"><Icon name="back" size={16}/> Back</Link>
       <header>
         <p className="label">FUND YOUR FIRN WALLET</p>
         <h1 className="mt-2 text-2xl font-semibold">Deposit USDT (TRC20)</h1>
