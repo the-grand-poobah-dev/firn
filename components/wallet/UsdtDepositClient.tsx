@@ -3,10 +3,11 @@
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
-const QRCodeSVG = dynamic(() => import('qrcode.react').then((module) => module.QRCodeSVG), { ssr: false });
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { Icon } from '@/components/ui/Icon';
+
+const QRCodeSVG = dynamic(() => import('qrcode.react').then((module) => module.QRCodeSVG), { ssr: false });
 
 type DepositStatus = 'awaiting_payment' | 'pending_verification' | 'confirmed' | 'needs_review' | 'rejected' | 'expired';
 type DepositRow = {
