@@ -38,3 +38,5 @@ export async function POST(request: Request) {
     .in('status', ['pending_verification','needs_review']).lte('expires_at', new Date().toISOString());
   return NextResponse.json({ checked }, { headers: { 'Cache-Control': 'no-store' } });
 }
+
+export async function GET(request: Request) { return POST(request); }
