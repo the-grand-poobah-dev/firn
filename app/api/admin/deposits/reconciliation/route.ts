@@ -93,7 +93,7 @@ async function readAllDepositRows(admin: ReturnType<typeof createAdminClient>) {
   const rows: DepositRow[] = [];
   const pageSize = 1000;
   for (let offset = 0; offset < 50000; offset += pageSize) {
-    const { data, error } = await admin.from('deposits')
+    const { data, error } = await (admin as any).from('deposits')
       .select('id,txid,status,verified_amount,receiving_address,from_address,to_address,block_timestamp,confirmations,credited_at')
       .order('created_at', { ascending: true }).range(offset, offset + pageSize - 1);
     if (error) throw new Error('Could not read deposit TXIDs from Supabase.');
@@ -106,7 +106,7 @@ async function readConfirmedDepositsForAddress(admin: ReturnType<typeof createAd
   const rows: DepositRow[] = [];
   const pageSize = 1000;
   for (let offset = 0; offset < 50000; offset += pageSize) {
-    const { data, error } = await admin.from('deposits')
+    const { data, error } = await (admin as any).from('deposits')
       .select('id,txid,status,verified_amount,receiving_address,from_address,to_address,block_timestamp,confirmations,credited_at')
       .eq('status', 'confirmed').eq('receiving_address', address)
       .order('created_at', { ascending: true }).range(offset, offset + pageSize - 1);
@@ -134,7 +134,7 @@ async function readDepositsByIds(admin: ReturnType<typeof createAdminClient>, id
   const map = new Map<string, DepositRow>();
   for (let i = 0; i < ids.length; i += 100) {
     const batch = ids.slice(i, i + 100);
-    const { data, error } = await admin.from('deposits')
+    const { data, error } = await (admin as any).from('deposits')
       .select('id,txid,status,verified_amount,receiving_address,from_address,to_address,block_timestamp,confirmations,credited_at')
       .in('id', batch);
     if (error) throw new Error('Could not match ledger entries to their deposit rows.');
