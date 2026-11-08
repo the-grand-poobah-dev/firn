@@ -158,6 +158,7 @@ async function mapLimit<T, R>(items: T[], limit: number, fn: (item: T) => Promis
 }
 
 export async function GET(request: Request) {
+  if (process.env.VERCEL_ENV && process.env.VERCEL_ENV !== 'production') return json({ error: 'Admin reconciliation is unavailable in Preview and Development.' }, 404);
   const session = await createClient();
   const { data: { user } } = await session.auth.getUser();
   if (!user) return json({ error: 'Administrator access required.' }, 403);
