@@ -5,7 +5,7 @@ import { createClient } from '@/lib/supabase/server';
 export const dynamic = 'force-dynamic';
 
 const TXID_PATTERN = /^[a-fA-F0-9]{64}$/;
-const AMOUNT_PATTERN = /^(?:0|[1-9]\d*)(?:\.\d{1,8})?$/;
+const AMOUNT_PATTERN = /^(?:0|[1-9]\d{0,21})(?:\.\d{1,8})?$/;
 
 function jsonError(message: string, status: number) {
   return NextResponse.json({ error: message }, { status, headers: { 'Cache-Control': 'no-store' } });
