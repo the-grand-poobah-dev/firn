@@ -5,6 +5,10 @@ begin;
 revoke all on function public.deposit_demo(numeric, text)
   from public, anon, authenticated, service_role;
 
+-- A demo withdrawal is not a real payout and must not be callable as a wallet operation.
+revoke all on function public.withdraw_demo(numeric)
+  from public, anon, authenticated, service_role;
+
 -- Remove Supabase's broad default table grants and expose only the operations
 -- required by the browser. RLS remains the row-level boundary.
 revoke all on table public.deposits, public.wallet_ledger, public.deposit_review_events
