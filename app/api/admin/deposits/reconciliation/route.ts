@@ -41,10 +41,13 @@ type LedgerRow = {
 };
 
 function unitsToDecimal(units: bigint, decimals = 6): string {
+  const negative = units < 0n;
+  const absolute = negative ? -units : units;
   const base = 10n ** BigInt(decimals);
-  const whole = units / base;
-  const fraction = (units % base).toString().padStart(decimals, '0');
-  return decimals ? `${whole}.${fraction}` : whole.toString();
+  const whole = absolute / base;
+  const fraction = (absolute % base).toString().padStart(decimals, '0');
+  const sign = negative ? '-' : '';
+  return decimals ? `${sign}${whole}.${fraction}` : `${sign}${whole}`;
 }
 function safeUnits(value: string | number | null | undefined): bigint {
   if (value === null || value === undefined) return 0n;
@@ -183,7 +186,8 @@ export async function GET() {
       const from = String(row.from ?? '');
       const decimals = Number(row.token_info?.decimals ?? 6);
       const value = String(row.value ?? '');
-      if (!/^[a-f0-9]{64}$/.test(txid) || to !== address || !/^[0-9]+$/.test(value) || decimals !== 6) continue;\n      if (row.token_info?.address && row.token_info.address !== contract) continue;
+      if (!/^[a-f0-9]{64}$/.test(txid) || to !== address || !/^[0-9]+$/.test(value) || decimals !== 6) continue;
+      if (row.token_info?.address && row.token_info.address !== contract) continue;
       const units = BigInt(value);
       chainTotal = addUnits(chainTotal, units);
       const current = incomingByTxid.get(txid) ?? { txid, amountUnits: 0n, fromAddresses: new Set<string>(), blockTimestamp: null };
