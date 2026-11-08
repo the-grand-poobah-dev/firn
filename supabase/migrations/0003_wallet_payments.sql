@@ -12,3 +12,7 @@ declare v private.wallet_payment_intents%rowtype;b numeric;begin if coalesce(aut
 revoke all on function public.wallet_payment_create(uuid,text,numeric,numeric,numeric,text,text) from public,anon,authenticated;revoke all on function public.wallet_payment_update(uuid,text,text,text) from public,anon,authenticated;revoke all on function public.wallet_payment_fail(uuid) from public,anon,authenticated;revoke all on function public.wallet_payment_find(uuid,text,text) from public,anon,authenticated;revoke all on function public.wallet_payment_credit(uuid,text) from public,anon,authenticated;
 grant execute on function public.wallet_payment_create(uuid,text,numeric,numeric,numeric,text,text) to service_role;grant execute on function public.wallet_payment_update(uuid,text,text,text) to service_role;grant execute on function public.wallet_payment_fail(uuid) to service_role;grant execute on function public.wallet_payment_find(uuid,text,text) to service_role;grant execute on function public.wallet_payment_credit(uuid,text) to service_role;
 create index if not exists wallet_payment_intents_user_created_idx on private.wallet_payment_intents(user_id,created_at desc);
+
+-- Legacy demo wallet RPCs are not customer payment/payout rails.
+revoke all on function public.deposit_demo(numeric, text) from public, anon, authenticated, service_role;
+revoke all on function public.withdraw_demo(numeric) from public, anon, authenticated, service_role;
