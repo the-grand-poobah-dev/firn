@@ -11,7 +11,7 @@ export async function POST(request: Request) {
   const { data: rows, error } = await admin.from('deposits')
     .select('id,txid,created_at').in('status', ['pending_verification','needs_review'])
     .lt('created_at', new Date(Date.now() - 60_000).toISOString())
-    .gt('expires_at', new Date().toISOString()).order('created_at', { ascending: true }).limit(50);
+    .gt('expires_at', new Date().toISOString()).order('created_at', { ascending: true }).limit(5);
   if (error) return NextResponse.json({ error: 'Could not load pending deposits.' }, { status: 503 });
   let checked = 0;
   for (const row of rows ?? []) {
