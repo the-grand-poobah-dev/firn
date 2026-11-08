@@ -198,7 +198,14 @@ export async function GET() {
     }
 
     const confirmedTotal = confirmedDeposits.rows.reduce((sum, row) => sum + safeUnits(row.verified_amount), 0n);
-    const allDepositTxids = new Set(allDepositRows.rows.map(row => row.txid.toLowerCase()));
+    const depositsByTxid = new Map<string, DepositRow[]>();
+    for (const row of allDepositRows.rows) {
+      const key = row.txid.toLowerCase();
+      const existing = depositsByTxid.get(key) ?? [];
+      existing.push(row);
+      depositsByTxid.set(key, existing);
+    }
+    const allDepositTxids = new Set(depositsByTxid.keys());
     const unmatched = [...incomingByTxid.values()]
       .filter(row => !allDepositTxids.has(row.txid))
       .map(row => ({
@@ -218,7 +225,7 @@ export async function GET() {
       const chainUnits = incomingByTxid.get(txid)?.amountUnits ?? 0n;
       const supabaseUnits = confirmedByTxid.get(txid) ?? 0n;
       if (chainUnits === supabaseUnits) return null;
-      const rows = allDepositRows.rows.filter(row => row.txid.toLowerCase() === txid);
+      const rows = depositsByTxid.get(txid) ?? [];
       return {
         txid,
         chainAmount: unitsToDecimal(chainUnits),
