@@ -9,9 +9,11 @@ export async function POST(request: Request) {
   const session = await createClient();
   const { data: { user } } = await session.auth.getUser();
   if (!user) return json({ error: 'Authentication required.' }, 401);
-  let body: any;
-  try { body = await request.json(); } catch { return json({ error: 'Invalid JSON.' }, 400); }
-  const id = typeof body?.depositId === 'string' ? body.depositId : '';
+  let parsed: unknown;
+  try { parsed = await request.json(); } catch { return json({ error: 'Invalid JSON.' }, 400); }
+  if (!parsed || typeof parsed !== 'object') return json({ error: 'Invalid request body.' }, 400);
+  const body = parsed as { depositId?: unknown };
+  const id = typeof body.depositId === 'string' ? body.depositId : '';
   if (!/^[0-9a-f-]{36}$/i.test(id)) return json({ error: 'Invalid deposit ID.' }, 400);
   const admin = createAdminClient();
   const { data: allowed, error: limitError } = await admin.rpc('consume_deposit_rate_limit', { p_user_id: user.id });
