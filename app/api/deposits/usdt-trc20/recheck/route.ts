@@ -1,11 +1,13 @@
 import { NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { verifyTronUsdtTransfer } from '@/lib/deposits/tron';
+import { areUsdtDepositsEnabled } from '@/lib/deposits/config';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
 export async function POST(request: Request) {
   const secret = process.env.CRON_SECRET;
+  if (!areUsdtDepositsEnabled()) return NextResponse.json({ error: 'USDT deposits are temporarily unavailable.' }, { status: 503 });
   if (!secret || request.headers.get('authorization') !== `Bearer ${secret}`) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   const admin = createAdminClient();
   const { data: rows, error } = await admin.from('deposits')
