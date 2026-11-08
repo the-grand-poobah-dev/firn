@@ -58,11 +58,11 @@ export async function POST(request: Request) {
       return response({ status: 'confirmed', message: 'Verified on the solidified TRON chain and credited.' }, 200);
     }
     const status = result.state === 'rejected' ? 'rejected' : 'needs_review';
-    await admin.from('deposits').update({ status, failure_reason: result.reason, updated_at: new Date().toISOString() }).eq('id', deposit.id);
+    await admin.from('deposits').update({ status, failure_reason: result.reason, updated_at: new Date().toISOString() }).eq('id', deposit.id).in('status', ['pending_verification', 'needs_review']);
     return response({ status, message: result.reason }, 202);
   } catch (error) {
     console.error('TRON verification failed:', error instanceof Error ? error.message : 'unknown');
-    await admin.from('deposits').update({ status: 'needs_review', failure_reason: 'Automated verification temporarily unavailable.', updated_at: new Date().toISOString() }).eq('id', deposit.id);
+    await admin.from('deposits').update({ status: 'needs_review', failure_reason: 'Automated verification temporarily unavailable.', updated_at: new Date().toISOString() }).eq('id', deposit.id).in('status', ['pending_verification', 'needs_review']);
     return response({ status: 'needs_review', message: 'Saved for manual review because automatic verification is temporarily unavailable.' }, 202);
   }
 }
