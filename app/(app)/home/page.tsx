@@ -67,6 +67,7 @@ export default async function HomePage() {
         <Link href="/home/geography" className="rounded-2xl border border-line bg-card p-3 text-center"><Icon name="globe" size={18} className="mx-auto text-accent"/><span className="mt-2 block text-xs font-semibold">Geography</span></Link>
       </div>
     </section>
+    <section className="space-y-3"><h2 className="text-base font-semibold">More from FIRN</h2><div className="grid grid-cols-3 gap-2"><Link href="/tools" className="rounded-2xl border border-line bg-card p-3 text-center text-xs font-semibold">Tools</Link><Link href="/learn" className="rounded-2xl border border-line bg-card p-3 text-center text-xs font-semibold">Learn</Link><Link href="/settings" className="rounded-2xl border border-line bg-card p-3 text-center text-xs font-semibold">Settings</Link></div></section>
     <p className="pb-2 text-center text-[10px] leading-5 text-muted">Returns are targets, not guarantees. Capital can be lost. Property information is illustrative and not financial advice.</p>
   </div>;
 }
