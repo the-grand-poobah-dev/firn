@@ -1,4 +1,4 @@
-import { NextResponse, type NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 import { createClient as createSupabaseAdminClient } from '@supabase/supabase-js';
 import { createClient } from '@/lib/supabase/server';
 
@@ -31,7 +31,7 @@ export async function GET() {
   return NextResponse.json({ deposits: data ?? [] }, { headers: { 'Cache-Control': 'no-store' } });
 }
 
-export async function POST(request: NextRequest) {
+export async function POST(request: Request) {
   const userClient = await createClient();
   const { data: { user }, error: authError } = await userClient.auth.getUser();
   if (authError || !user) return jsonError('Please sign in before submitting a transaction.', 401);
