@@ -2,7 +2,7 @@ import 'server-only';
 import { isValidTronAddress } from '@/lib/deposits/tron';
 
 export function areUsdtDepositsEnabled(): boolean {
-  return (process.env.USDT_DEPOSITS_ENABLED ?? 'true').trim().toLowerCase() !== 'false';
+  return (process.env.USDT_DEPOSITS_ENABLED ?? 'false').trim().toLowerCase() === 'true';
 }
 
 export function getAcceptedDepositAddresses(): string[] {
