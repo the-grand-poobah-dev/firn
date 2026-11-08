@@ -37,10 +37,10 @@ export async function POST(request: Request) {
       return json({ status: 'confirmed', message: 'Transaction verified and wallet credited.' });
     }
     if (result.state === 'rejected') {
-      await admin.from('deposits').update({ status: 'rejected', failure_reason: result.reason, updated_at: new Date().toISOString() }).eq('id', id).eq('user_id', user.id);
+      await admin.from('deposits').update({ status: 'rejected', failure_reason: result.reason, updated_at: new Date().toISOString() }).eq('id', id).eq('user_id', user.id).in('status', ['pending_verification', 'needs_review']);
       return json({ status: 'rejected', message: result.reason });
     }
-    await admin.from('deposits').update({ status: 'needs_review', failure_reason: result.reason, updated_at: new Date().toISOString() }).eq('id', id).eq('user_id', user.id);
+    await admin.from('deposits').update({ status: 'needs_review', failure_reason: result.reason, updated_at: new Date().toISOString() }).eq('id', id).eq('user_id', user.id).in('status', ['pending_verification', 'needs_review']);
     return json({ status: 'needs_review', message: result.reason }, 202);
   } catch {
     console.error('User-requested deposit recheck failed; sensitive details withheld.');
