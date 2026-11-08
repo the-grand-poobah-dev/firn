@@ -91,6 +91,13 @@ describe('USDT TRC20 verification',()=>{
     mockChain({id:txid,blockNumber:123,blockTimeStamp:1700000000000,receipt:{result:'SUCCESS'},log:[log(contract,recipient,9_999_999n)]});
     expect((await verifyTronUsdtTransfer(txid,recipient)).state).toBe('rejected');
   });
+  it('can re-verify a historical on-chain transfer below the current minimum',async()=>{
+    setVerificationEnv();
+    mockChain({id:txid,blockNumber:123,blockTimeStamp:1700000000000,receipt:{result:'SUCCESS'},log:[log(contract,recipient,9_999_999n)]});
+    const result=await verifyTronUsdtTransfer(txid,recipient,{enforceMinimum:false});
+    expect(result.state).toBe('verified');
+    if(result.state==='verified')expect(result.amount).toBe('9.999999');
+  });
   it('keeps a transaction pending when it is not yet solidified',async()=>{
     setVerificationEnv();
     mockChain({}, {txID:txid});
