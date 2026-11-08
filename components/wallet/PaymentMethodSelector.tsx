@@ -12,7 +12,7 @@ type Props = {
   usdtEnabled?: boolean;
 };
 
-export function PaymentMethodSelector({ selectedId, returnTo = '/wallet', onSelect, usdtEnabled = true }: Props) {
+export function PaymentMethodSelector({ selectedId, returnTo = '/wallet', onSelect, usdtEnabled = false }: Props) {
   const router = useRouter();
 
   function selectMethod(id: string) {
