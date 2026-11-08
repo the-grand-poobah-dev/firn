@@ -140,6 +140,44 @@ $$;
 revoke all on function public.credit_deposit(uuid) from public, anon, authenticated;
 grant execute on function public.credit_deposit(uuid) to service_role;
 
+-- Chain verification, state transition, and wallet credit are atomic as well.
+create or replace function public.confirm_and_credit_deposit(
+  p_deposit_id uuid,
+  p_verified_amount numeric,
+  p_from_address text,
+  p_to_address text,
+  p_block_timestamp timestamptz,
+  p_confirmations integer default 1
+)
+returns uuid
+language plpgsql
+security definer
+set search_path = public, pg_temp
+as $
+declare v_deposit public.deposits%rowtype; v_ledger_id uuid;
+begin
+  if coalesce(auth.role(), '') <> 'service_role' then raise exception 'service role required'; end if;
+  if p_verified_amount is null or p_verified_amount <= 0 or p_confirmations < 1 then
+    raise exception 'Invalid verified deposit data';
+  end if;
+  select * into v_deposit from public.deposits where id=p_deposit_id for update;
+  if not found or v_deposit.status not in ('pending_verification','needs_review','confirmed') then
+    raise exception 'Deposit is not eligible for confirmation';
+  end if;
+  if v_deposit.status='confirmed' and v_deposit.verified_amount is distinct from p_verified_amount then
+    raise exception 'Confirmed deposit amount cannot be changed';
+  end if;
+  update public.deposits set status='confirmed', verified_amount=p_verified_amount,
+    from_address=p_from_address, to_address=p_to_address, block_timestamp=p_block_timestamp,
+    confirmations=p_confirmations, failure_reason=null, updated_at=now()
+    where id=p_deposit_id;
+  v_ledger_id := public.credit_deposit(p_deposit_id);
+  return v_ledger_id;
+end;
+$;
+revoke all on function public.confirm_and_credit_deposit(uuid,numeric,text,text,timestamptz,integer) from public, anon, authenticated;
+grant execute on function public.confirm_and_credit_deposit(uuid,numeric,text,text,timestamptz,integer) to service_role;
+
 -- Review, audit, and (for approvals) credit are one atomic database transaction.
 create or replace function public.review_deposit(
   p_deposit_id uuid,
