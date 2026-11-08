@@ -9,7 +9,7 @@ export const maxDuration = 60;
 const DEFAULT_CONTRACT = 'TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t';
 const PAGE_SIZE = 200;
 const MAX_HISTORY_PAGES = 25;
-const MAX_LEDGER_CHECKS = 40;
+const MAX_LEDGER_CHECKS = 25;
 const json = (data: unknown, status = 200) => NextResponse.json(data, { status, headers: { 'Cache-Control': 'no-store' } });
 
 type TronTransfer = {
@@ -86,16 +86,18 @@ async function loadConfirmedIncoming(address: string, contract: string, apiKey: 
   } while (fingerprint && pages < MAX_HISTORY_PAGES);
   return { rows, complete: !fingerprint, pages };
 }
-async function readAllDepositTxids(admin: ReturnType<typeof createAdminClient>) {
-  const txids = new Set<string>();
+async function readAllDepositRows(admin: ReturnType<typeof createAdminClient>) {
+  const rows: DepositRow[] = [];
   const pageSize = 1000;
   for (let offset = 0; offset < 50000; offset += pageSize) {
-    const { data, error } = await admin.from('deposits').select('txid').order('created_at', { ascending: true }).range(offset, offset + pageSize - 1);
+    const { data, error } = await admin.from('deposits')
+      .select('id,txid,status,verified_amount,receiving_address,from_address,to_address,block_timestamp,confirmations,credited_at')
+      .order('created_at', { ascending: true }).range(offset, offset + pageSize - 1);
     if (error) throw new Error('Could not read deposit TXIDs from Supabase.');
-    for (const row of data ?? []) if (row.txid) txids.add(String(row.txid).toLowerCase());
-    if (!data || data.length < pageSize) return { txids, complete: true };
+    rows.push(...(data ?? []) as DepositRow[]);
+    if (!data || data.length < pageSize) return { rows, complete: true };
   }
-  return { txids, complete: false };
+  return { rows, complete: false };
 }
 async function readConfirmedDepositsForAddress(admin: ReturnType<typeof createAdminClient>, address: string) {
   const rows: DepositRow[] = [];
@@ -170,7 +172,7 @@ export async function GET() {
       loadConfirmedIncoming(address, contract, apiKey),
       readConfirmedDepositsForAddress(admin, address),
       readLedgerRows(admin),
-      readAllDepositTxids(admin),
+      readAllDepositRows(admin),
     ]);
 
     let chainTotal = 0n;
@@ -181,7 +183,7 @@ export async function GET() {
       const from = String(row.from ?? '');
       const decimals = Number(row.token_info?.decimals ?? 6);
       const value = String(row.value ?? '');
-      if (!/^[a-f0-9]{64}$/.test(txid) || to !== address || !/^[0-9]+$/.test(value) || decimals !== 6) continue;
+      if (!/^[a-f0-9]{64}$/.test(txid) || to !== address || !/^[0-9]+$/.test(value) || decimals !== 6) continue;\n      if (row.token_info?.address && row.token_info.address !== contract) continue;
       const units = BigInt(value);
       chainTotal = addUnits(chainTotal, units);
       const current = incomingByTxid.get(txid) ?? { txid, amountUnits: 0n, fromAddresses: new Set<string>(), blockTimestamp: null };
@@ -201,6 +203,25 @@ export async function GET() {
         blockTimestamp: row.blockTimestamp,
         tronscanUrl: `https://tronscan.org/#/transaction/${row.txid}`,
       }));
+
+    const confirmedByTxid = new Map<string, bigint>();
+    for (const row of confirmedDeposits.rows) {
+      confirmedByTxid.set(row.txid.toLowerCase(), (confirmedByTxid.get(row.txid.toLowerCase()) ?? 0n) + safeUnits(row.verified_amount));
+    }
+    const comparisonTxids = new Set([...incomingByTxid.keys(), ...confirmedByTxid.keys()]);
+    const transferDiscrepancies = [...comparisonTxids].map(txid => {
+      const chainUnits = incomingByTxid.get(txid)?.amountUnits ?? 0n;
+      const supabaseUnits = confirmedByTxid.get(txid) ?? 0n;
+      if (chainUnits === supabaseUnits) return null;
+      const rows = allDepositRows.rows.filter(row => row.txid.toLowerCase() === txid);
+      return {
+        txid,
+        chainAmount: unitsToDecimal(chainUnits),
+        supabaseConfirmedAmount: unitsToDecimal(supabaseUnits),
+        depositStatuses: rows.map(row => row.status),
+        tronscanUrl: `https://tronscan.org/#/transaction/${txid}`,
+      };
+    }).filter((row): row is NonNullable<typeof row> => row !== null);
 
     const ledgerRows = ledger.rows;
     const depositsById = await readDepositsByIds(admin, [...new Set(ledgerRows.map(row => row.deposit_id).filter((id): id is string => Boolean(id)))]);
@@ -239,14 +260,14 @@ export async function GET() {
       chainTotal: unitsToDecimal(chainTotal),
       confirmedDepositTotal: unitsToDecimal(confirmedTotal),
       difference: unitsToDecimal(chainTotal - confirmedTotal),
-      chainTransferCount: chain.rows.length,
+      chainTransferCount: incomingByTxid.size,
       confirmedDepositCount: confirmedDeposits.rows.length,
-      unmatchedTransfers: unmatched,
+      unmatchedTransfers: unmatched,\n      transferDiscrepancies,
       unverifiableLedgerEntries: issues,
       ledgerRowsTotal: ledgerRows.length,
       ledgerRowsChecked: rowsToVerify.length,
       historyComplete: chain.complete,
-      depositRowsComplete: confirmedDeposits.complete && allDepositTxids.complete,
+      depositRowsComplete: confirmedDeposits.complete && allDepositRows.complete,
       ledgerRowsComplete: ledger.complete && ledgerRows.length <= MAX_LEDGER_CHECKS,
       historyPages: chain.pages,
       readOnly: true,
