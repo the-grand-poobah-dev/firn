@@ -14,7 +14,9 @@ The receiving address is read only from the server-side `DEPOSIT_USDT_TRC20_ADDR
 
 | Variable | Purpose | Who supplies it |
 |---|---|---|
-| `DEPOSIT_USDT_TRC20_ADDRESS` | Current receiving wallet (valid TRON Base58Check address) | FIRN operator |\n| `ACCEPTED_DEPOSIT_ADDRESSES` | Comma-separated allowlist containing the current wallet and any older wallets with pending deposits | FIRN operator |\n| `USDT_DEPOSITS_ENABLED` | Deposit kill switch; `true` or unset enables deposits, `false` disables new submissions | FIRN operator |
+| `DEPOSIT_USDT_TRC20_ADDRESS` | Current receiving wallet (valid TRON Base58Check address) | FIRN operator |
+| `ACCEPTED_DEPOSIT_ADDRESSES` | Comma-separated allowlist containing the current wallet and any older wallets with pending deposits | FIRN operator |
+| `USDT_DEPOSITS_ENABLED` | Deposit kill switch; `true` or unset enables deposits, `false` disables new submissions | FIRN operator |
 | `USDT_TRC20_CONTRACT` | Official contract above | FIRN operator |
 | `MIN_DEPOSIT_USDT` | Minimum verified amount, default 10 | FIRN operator |
 | `TRONGRID_API_KEY` | Authenticated TronGrid reads | FIRN operator |
