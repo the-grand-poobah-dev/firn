@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
-import { verifyTronUsdtTransfer } from '@/lib/deposits/tron';
+import { isDuplicateTxidError, verifyTronUsdtTransfer } from '@/lib/deposits/tron';
 
 export const dynamic = 'force-dynamic';
 const TXID = /^[a-fA-F0-9]{64}$/;
@@ -33,7 +33,7 @@ export async function POST(request: Request) {
     to_address: address, status: 'pending_verification',
   }).select('id').single();
   if (insertError || !deposit) {
-    if (insertError?.code === '23505') return response({ error: 'This transaction ID has already been submitted.' }, 409);
+    if (isDuplicateTxidError(insertError)) return response({ error: 'This transaction ID has already been submitted.' }, 409);
     console.error('Deposit claim insert failed:', insertError?.code ?? 'unknown');
     return response({ error: 'Could not record the deposit claim.' }, 503);
   }
