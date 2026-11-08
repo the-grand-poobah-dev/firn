@@ -30,8 +30,6 @@ export async function POST(request: Request) {
   if (limitError) { console.error('Deposit rate limit unavailable'); return response({ error: 'Deposit verification is temporarily unavailable.' }, 503); }
   if (!allowed) return response({ error: 'Too many verification attempts. Try again in an hour.' }, 429);
 
-  const address = process.env.DEPOSIT_USDT_TRC20_ADDRESS?.trim() ?? '';
-  if (!/^T[1-9A-HJ-NP-Za-km-z]{33}$/.test(address)) return response({ error: 'Deposit receiving address is not configured.' }, 503);
   const { data: existing } = await admin.from('deposits').select('id').eq('txid', txid).maybeSingle();
   if (existing) return response({ error: 'This transaction ID has already been submitted.' }, 409);
 
