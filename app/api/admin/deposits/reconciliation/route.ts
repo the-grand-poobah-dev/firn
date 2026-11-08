@@ -38,6 +38,8 @@ type LedgerRow = {
   deposit_id: string | null;
   amount: string | number;
   created_at: string;
+  kind: string;
+  method: string | null;
 };
 
 function unitsToDecimal(units: bigint, decimals = 6): string {
@@ -121,8 +123,8 @@ async function readLedgerRows(admin: ReturnType<typeof createAdminClient>) {
   const pageSize = 1000;
   for (let offset = 0; offset < 10000; offset += pageSize) {
     const { data, error } = await admin.from('wallet_ledger')
-      .select('id,deposit_id,amount,created_at')
-      .eq('kind', 'deposit').eq('method', 'usdt_trc20').not('deposit_id', 'is', null)
+      .select('id,deposit_id,amount,created_at,kind,method')
+      .not('deposit_id', 'is', null)
       .order('created_at', { ascending: false }).range(offset, offset + pageSize - 1);
     if (error) throw new Error('Could not read USDT deposit ledger entries.');
     rows.push(...(data ?? []) as LedgerRow[]);
@@ -255,6 +257,7 @@ export async function GET(request: Request) {
         tronscanUrl: deposit?.txid ? `https://tronscan.org/#/transaction/${deposit.txid}` : null,
       };
       if (!deposit) return { ...base, reason: 'Wallet ledger entry has no matching deposit row.' };
+      if (ledgerRow.kind !== 'deposit' || ledgerRow.method !== 'usdt_trc20') return { ...base, reason: 'Ledger row kind or method does not match a USDT TRC20 deposit credit.' };
       if (deposit.status !== 'confirmed' || !deposit.receiving_address) return { ...base, reason: 'Deposit row is not confirmed or has no pinned receiving address.' };
       try {
         const result = await verifyTronUsdtTransfer(deposit.txid, deposit.receiving_address);
