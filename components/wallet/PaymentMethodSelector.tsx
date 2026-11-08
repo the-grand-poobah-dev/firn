@@ -2,7 +2,6 @@
 
 import { useRouter } from 'next/navigation';
 import { paymentMethods } from '@/lib/payment-methods';
-import { Card } from '@/components/ui/Card';
 import { Icon } from '@/components/ui/Icon';
 import { ComingSoonBadge } from './ComingSoonBadge';
 
