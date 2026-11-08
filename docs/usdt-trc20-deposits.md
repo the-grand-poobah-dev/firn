@@ -15,7 +15,7 @@ The receiving address is read only from the server-side `DEPOSIT_USDT_TRC20_ADDR
 | Variable | Purpose | Who supplies it |
 |---|---|---|
 | `DEPOSIT_USDT_TRC20_ADDRESS` | Current receiving wallet (valid TRON Base58Check address) | FIRN operator |
-| `ACCEPTED_DEPOSIT_ADDRESSES` | Comma-separated allowlist containing the current wallet and any older wallets with pending deposits | FIRN operator |
+| `ACCEPTED_DEPOSIT_ADDRESSES` | Optional comma-separated allowlist for current and historical pinned wallets. If omitted, only the active receiving address is accepted for new claims; historical addresses require an explicit list. | FIRN operator |
 | `USDT_DEPOSITS_ENABLED` | Fail-closed kill switch; only explicit `true` enables verification and rechecks | FIRN operator |
 | `USDT_TRC20_CONTRACT` | Official contract above | FIRN operator |
 | `MIN_DEPOSIT_USDT` | Minimum verified amount, default 10 | FIRN operator |
@@ -66,9 +66,9 @@ Vercel Hobby supports daily cron schedules only. The configured cron is daily at
 ## Pre-launch verification checklist
 
 1. Apply migration to development Supabase and verify RLS with normal-user and admin sessions.
-2. Configure all required environment variables in Vercel Preview and Production (never expose secrets publicly). `ACCEPTED_DEPOSIT_ADDRESSES` must include `DEPOSIT_USDT_TRC20_ADDRESS` and every older pinned recipient that still needs rechecking.
+2. Configure `DEPOSIT_USDT_TRC20_ADDRESS`, `TRONGRID_API_KEY`, `USDT_TRC20_CONTRACT`, and `MIN_DEPOSIT_USDT` in Vercel Preview and Production (never expose secrets publicly). `ACCEPTED_DEPOSIT_ADDRESSES` is optional; if supplied, include the active wallet and every older pinned recipient that still needs rechecking.
 3. Confirm the configured wallet address and contract match the operator's self-custody wallet and the official TRON USDT contract.
-4. Keep `USDT_DEPOSITS_ENABLED` unset (disabled) until the sender wallet is cryptographically bound to the signed-in FIRN user. A public TXID alone is not proof of who sent the funds.
+4. Keep `USDT_DEPOSITS_ENABLED=false` until the sender wallet is cryptographically bound to the signed-in FIRN user. The server rejects any configured USDT contract other than the official TRON USDT contract. A public TXID alone is not proof of who sent the funds.
 5. Run CI: lint, TypeScript, mocked TronGrid tests, and production build.
 6. Test success, look-alike token, wrong recipient, underpayment, duplicate TXID, unconfirmed transaction, timeout, retry, rejected manual approval, rejection, and double-credit attempts.
 7. Verify exactly one wallet ledger row per deposit and that its amount equals `verified_amount`, not `claimed_amount`.
