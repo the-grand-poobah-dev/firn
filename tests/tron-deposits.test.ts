@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 vi.mock('server-only', () => ({}));
-import { decimalToUnits, verifyTronUsdtTransfer } from '@/lib/deposits/tron';
+import { decimalToUnits, isDuplicateTxidError, verifyTronUsdtTransfer } from '../lib/deposits/tron';
 
 const recipient = 'TEFtmBSumTS3yRjestr3YjK6eMwoa5n4Ha';
 const contract = 'TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t';
@@ -24,6 +24,7 @@ afterEach(()=>{ vi.unstubAllGlobals(); vi.unstubAllEnvs(); vi.restoreAllMocks();
 
 describe('USDT TRC20 verification',()=>{
   const env={TRONGRID_API_KEY:'test-key',DEPOSIT_USDT_TRC20_ADDRESS:recipient,USDT_TRC20_CONTRACT:contract,MIN_DEPOSIT_USDT:'10'};
+  it('treats a database unique violation as a reused TXID',()=>{expect(isDuplicateTxidError({code:'23505'})).toBe(true);expect(isDuplicateTxidError({code:'22000'})).toBe(false);});
   it('converts six-decimal token values exactly',()=>{expect(decimalToUnits('10.000001')).toBe(10000001n);expect(decimalToUnits('10.1')).toBe(10100000n);});
   it('accepts a successful solidified USDT transfer to FIRN',async()=>{
     vi.stubEnv('TRONGRID_API_KEY',env.TRONGRID_API_KEY);vi.stubEnv('DEPOSIT_USDT_TRC20_ADDRESS',recipient);vi.stubEnv('USDT_TRC20_CONTRACT',contract);vi.stubEnv('MIN_DEPOSIT_USDT','10');
