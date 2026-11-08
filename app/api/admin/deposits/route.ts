@@ -32,14 +32,10 @@ export async function POST(request: Request) {
   const body = parsed as { depositId?: unknown; action?: unknown; amount?: unknown; reason?: unknown };
   const id = typeof body.depositId === 'string' ? body.depositId : '';
   const action = body.action;
-  const amount = typeof body.amount === 'string' ? body.amount.trim() : '';
   const reason = typeof body.reason === 'string' ? body.reason.trim() : '';
   if (!/^[0-9a-f-]{36}$/i.test(id)) return json({ error: 'Invalid deposit ID.' }, 400);
   if (action !== 'approve' && action !== 'reject') return json({ error: 'Unsupported review action.' }, 400);
   if (action === 'approve') return json({ error: 'Manual approval is disabled. Only automated on-chain verification can credit a deposit.' }, 409);
-  if (action === 'approve' && (!/^(?:0|[1-9]\\d{0,17})(?:\\.\\d{1,6})?$/.test(amount) || Number(amount) <= 0)) {
-    return json({ error: 'Enter a positive amount with at most six decimal places.' }, 400);
-  }
   if (action === 'reject' && (reason.length < 5 || reason.length > 500)) {
     return json({ error: 'Provide a rejection reason between 5 and 500 characters.' }, 400);
   }
@@ -47,9 +43,9 @@ export async function POST(request: Request) {
   const { data, error } = await admin.rpc('review_deposit', {
     p_deposit_id: id,
     p_actor_id: actor.id,
-    p_action: action === 'approve' ? 'approved' : 'rejected',
-    p_amount: action === 'approve' ? amount : null,
-    p_reason: action === 'reject' ? reason : null,
+    p_action: 'rejected',
+    p_amount: null,
+    p_reason: reason,
   });
   if (error) {
     console.error('Admin deposit review transaction failed:', error.code);
