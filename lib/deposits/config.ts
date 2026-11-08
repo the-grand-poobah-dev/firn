@@ -1,8 +1,13 @@
 import 'server-only';
 import { isValidTronAddress } from '@/lib/deposits/tron';
 
+// Keep the payment rail closed until each claimant cryptographically proves control of the TRON sender wallet.
+// Flip this constant only after the wallet-signature challenge flow and its database migration are deployed and tested.
+const SENDER_WALLET_OWNERSHIP_PROOF_IMPLEMENTED = false;
+
 export function areUsdtDepositsEnabled(): boolean {
-  return (process.env.USDT_DEPOSITS_ENABLED ?? 'false').trim().toLowerCase() === 'true';
+  return SENDER_WALLET_OWNERSHIP_PROOF_IMPLEMENTED &&
+    (process.env.USDT_DEPOSITS_ENABLED ?? 'false').trim().toLowerCase() === 'true';
 }
 
 export function getAcceptedDepositAddresses(): string[] {
