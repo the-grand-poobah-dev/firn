@@ -30,7 +30,8 @@ Never add service-role keys, TronGrid API keys, or cron secrets to Git, client-s
 Apply these migrations in order to the **development database first**:
 1. `supabase/migrations/20261108150000_secure_usdt_trc20_deposits_admin.sql` creates the deposit/admin foundation.
 2. `supabase/migrations/20261108193000_pin_usdt_deposit_recipients.sql` pins the receiving address per deposit, enforces the pinned-recipient check before crediting, and disables manual admin crediting.
-3. `supabase/migrations/20261108210000_revoke_demo_deposit_credit.sql` revokes client execution of the legacy `deposit_demo` wallet-credit RPC; removes broad browser table grants on deposits/ledger/review events; and limits profile updates to ordinary profile/preferences columns.
+3. `supabase/migrations/20261108210000_revoke_demo_deposit_credit.sql` revokes client execution of the legacy `deposit_demo` and `withdraw_demo` RPCs; removes broad browser table grants on deposits/ledger/review events; and limits profile updates to ordinary profile/preferences columns.
+4. `supabase/migrations/20261108220000_require_kyc_for_positions.sql` requires server-verified KYC before a user can lock funds into a savings position.
 
 The first migration adds:
 - `profiles.is_admin`, with a trigger preventing self-promotion
@@ -39,9 +40,9 @@ The first migration adds:
 - `deposit_review_events` for reviewer audit history
 - service-role-only rate limiting and idempotent `credit_deposit(uuid)`
 
-The third migration also prevents signed-in clients from changing `kyc_status`, `referral_code`, `is_admin`, or wallet/deposit records directly. The legacy `deposit_demo` RPC is removed from all API roles.
+The third migration also prevents signed-in clients from changing `kyc_status`, `referral_code`, `is_admin`, or wallet/deposit records directly. The legacy demo deposit and withdrawal RPCs are removed from all API roles. The fourth migration adds the KYC check inside `create_position`; UI-only checks are not sufficient.
 
-Do not apply to production until development migration, security, CI, and end-to-end tests pass and the owner explicitly approves production migration.
+The first migration is already applied to the existing production project. Migrations 2–4 are prepared but not applied. The Supabase account currently has no separate development project; do not apply migrations 2–4 to production until a development project exists, all migrations and RLS tests pass there, and the owner explicitly approves production migration.
 
 After the migration, grant the intended admin manually in the Supabase SQL Editor:
 
