@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
-import { QRCodeSVGProps } from 'qrcode.react';
 const QRCodeSVG = dynamic(() => import('qrcode.react').then((module) => module.QRCodeSVG), { ssr: false });
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
