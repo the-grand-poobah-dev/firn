@@ -17,15 +17,15 @@ export async function POST(request: Request) {
     try {
       const result = await verifyTronUsdtTransfer(row.txid);
       if (result.state === 'verified') {
-        const { error: updateError } = await admin.from('deposits').update({
-          status: 'confirmed', verified_amount: result.amount, from_address: result.fromAddress,
-          to_address: result.toAddress, block_timestamp: result.blockTimestamp, confirmations: 1,
-          failure_reason: null, updated_at: new Date().toISOString(),
-        }).eq('id', row.id).in('status', ['pending_verification','needs_review']);
-        if (!updateError) {
-          const { error: creditError } = await admin.rpc('credit_deposit', { p_deposit_id: row.id });
-          if (creditError) console.error('Deposit credit retry failed:', creditError.code);
-        }
+        const { error: creditError } = await admin.rpc('confirm_and_credit_deposit', {
+          p_deposit_id: row.id,
+          p_verified_amount: result.amount,
+          p_from_address: result.fromAddress,
+          p_to_address: result.toAddress,
+          p_block_timestamp: result.blockTimestamp,
+          p_confirmations: 1,
+        });
+        if (creditError) console.error('Deposit credit retry failed:', creditError.code);
       } else if (result.state === 'rejected') {
         await admin.from('deposits').update({ status: 'rejected', failure_reason: result.reason, updated_at: new Date().toISOString() }).eq('id', row.id);
       } else {
