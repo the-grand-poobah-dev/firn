@@ -18,8 +18,12 @@ export function getActiveDepositAddress(): string | null {
     console.error('USDT deposits unavailable: DEPOSIT_USDT_TRC20_ADDRESS is missing or is not a valid TRON Base58Check address.');
     return null;
   }
-  const accepted = getAcceptedDepositAddresses();
-  if (!accepted.every(isValidTronAddress) || !accepted.includes(address)) {
+  const configuredAllowlist = getAcceptedDepositAddresses();
+  // An explicit allowlist is optional. When omitted, only the current configured
+  // receiving address is accepted; historical addresses require explicit listing.
+  if (configuredAllowlist.length && (
+    !configuredAllowlist.every(isValidTronAddress) || !configuredAllowlist.includes(address)
+  )) {
     console.error('USDT deposits unavailable: ACCEPTED_DEPOSIT_ADDRESSES is invalid or does not include the active receiving address.');
     return null;
   }
