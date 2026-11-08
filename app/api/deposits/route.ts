@@ -1,11 +1,7 @@
 import { NextResponse } from 'next/server';
-import { createClient as createSupabaseAdminClient } from '@supabase/supabase-js';
 import { createClient } from '@/lib/supabase/server';
 
 export const dynamic = 'force-dynamic';
-
-const TXID_PATTERN = /^[a-fA-F0-9]{64}$/;
-const AMOUNT_PATTERN = /^(?:0|[1-9]\d{0,21})(?:\.\d{1,8})?$/;
 
 function jsonError(message: string, status: number) {
   return NextResponse.json({ error: message }, { status, headers: { 'Cache-Control': 'no-store' } });
@@ -24,10 +20,8 @@ export async function GET() {
     .limit(10);
 
   if (error) {
-    console.error('Deposit status lookup failed:', error.message);
+    console.error('Deposit status lookup failed:', error.code);
     return jsonError('Deposit status is temporarily unavailable. Please try again later.', 503);
   }
-
   return NextResponse.json({ deposits: data ?? [] }, { headers: { 'Cache-Control': 'no-store' } });
 }
-
