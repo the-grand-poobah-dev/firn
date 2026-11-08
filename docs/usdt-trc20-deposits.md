@@ -81,4 +81,4 @@ Vercel Hobby supports daily cron schedules only. The configured cron is daily at
 - Compares the confirmed incoming total with `verified_amount` summed over confirmed Supabase deposits pinned to that same receiving address.
 - Lists incoming TXIDs with no deposit row, TXID-level chain/Supabase amount differences, and deposit ledger credits whose TXID or amounts fail a fresh on-chain verification against the pinned receiving address.
 - This endpoint is read-only: it uses Supabase SELECT queries and TronGrid read endpoints only. It does not call deposit credit, review, insert, update, or delete operations.
-- Safety caps are reported explicitly as an incomplete report rather than a clean reconciliation: up to 25 TronGrid pages (200 events per page), 50,000 deposit rows, 10,000 ledger rows, and 40 ledger TXIDs re-verified per run.
+- Safety caps are reported explicitly as an incomplete report rather than a clean reconciliation: up to 25 TronGrid pages (200 events per page), 50,000 deposit rows, 10,000 ledger rows, and 40 ledger TXIDs re-verified per request. The admin page offers successive read-only batches until every returned ledger row has been checked.
