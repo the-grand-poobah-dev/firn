@@ -1,0 +1,8 @@
+{
+  "crons": [
+    {
+      "path": "/api/deposits/usdt-trc20/recheck",
+      "schedule": "0 3 * * *"
+    }
+  ]
+}
