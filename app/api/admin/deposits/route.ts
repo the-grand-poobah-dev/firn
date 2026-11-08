@@ -12,6 +12,7 @@ async function getAdmin() {
   return data?.is_admin === true ? user : null;
 }
 export async function GET() {
+  if (process.env.VERCEL_ENV && process.env.VERCEL_ENV !== 'production') return json({ error: 'Admin deposit tools are unavailable in Preview and Development.' }, 404);
   const actor = await getAdmin();
   if (!actor) return json({ error: 'Administrator access required.' }, 403);
   const admin = createAdminClient();
@@ -24,6 +25,7 @@ export async function GET() {
   return json({ deposits: (data ?? []).map(row => ({ ...row, user_label: names.get(row.user_id) ?? row.user_id })) });
 }
 export async function POST(request: Request) {
+  if (process.env.VERCEL_ENV && process.env.VERCEL_ENV !== 'production') return json({ error: 'Admin deposit tools are unavailable in Preview and Development.' }, 404);
   const actor = await getAdmin();
   if (!actor) return json({ error: 'Administrator access required.' }, 403);
   let parsed: unknown;
