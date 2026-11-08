@@ -24,14 +24,15 @@ export async function POST(request: Request) {
   try {
     const result = await verifyTronUsdtTransfer(deposit.txid);
     if (result.state === 'verified') {
-      const { error } = await admin.from('deposits').update({
-        status: 'confirmed', verified_amount: result.amount, from_address: result.fromAddress,
-        to_address: result.toAddress, block_timestamp: result.blockTimestamp, confirmations: 1,
-        failure_reason: null, updated_at: new Date().toISOString(),
-      }).eq('id', id).eq('user_id', user.id).in('status', ['pending_verification','needs_review']);
+      const { error } = await admin.rpc('confirm_and_credit_deposit', {
+        p_deposit_id: id,
+        p_verified_amount: result.amount,
+        p_from_address: result.fromAddress,
+        p_to_address: result.toAddress,
+        p_block_timestamp: result.blockTimestamp,
+        p_confirmations: 1,
+      });
       if (error) throw error;
-      const { error: creditError } = await admin.rpc('credit_deposit', { p_deposit_id: id });
-      if (creditError) throw creditError;
       return json({ status: 'confirmed', message: 'Transaction verified and wallet credited.' });
     }
     if (result.state === 'rejected') {
