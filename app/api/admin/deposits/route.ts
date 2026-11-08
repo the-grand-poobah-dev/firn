@@ -19,19 +19,21 @@ export async function GET() {
     .in('status', ['needs_review','pending_verification']).order('created_at', { ascending: true }).limit(200);
   if (error) { console.error('Admin deposit list failed:', error.code); return json({ error: 'Could not load deposits.' }, 503); }
   const ids = [...new Set((data ?? []).map(row => row.user_id))];
-  const { data: profiles } = ids.length ? await admin.from('profiles').select('id,full_name').in('id', ids) : { data: [] as any[] };
+  const { data: profiles } = ids.length ? await admin.from('profiles').select('id,full_name').in('id', ids) : { data: [] as Array<{ id: string; full_name: string | null }> };
   const names = new Map((profiles ?? []).map(p => [p.id, p.full_name]));
   return json({ deposits: (data ?? []).map(row => ({ ...row, user_label: names.get(row.user_id) ?? row.user_id })) });
 }
 export async function POST(request: Request) {
   const actor = await getAdmin();
   if (!actor) return json({ error: 'Administrator access required.' }, 403);
-  let body: any;
-  try { body = await request.json(); } catch { return json({ error: 'Invalid JSON.' }, 400); }
-  const id = typeof body?.depositId === 'string' ? body.depositId : '';
-  const action = body?.action;
-  const amount = typeof body?.amount === 'string' ? body.amount.trim() : '';
-  const reason = typeof body?.reason === 'string' ? body.reason.trim() : '';
+  let parsed: unknown;
+  try { parsed = await request.json(); } catch { return json({ error: 'Invalid JSON.' }, 400); }
+  if (!parsed || typeof parsed !== 'object') return json({ error: 'Invalid request body.' }, 400);
+  const body = parsed as { depositId?: unknown; action?: unknown; amount?: unknown; reason?: unknown };
+  const id = typeof body.depositId === 'string' ? body.depositId : '';
+  const action = body.action;
+  const amount = typeof body.amount === 'string' ? body.amount.trim() : '';
+  const reason = typeof body.reason === 'string' ? body.reason.trim() : '';
   if (!/^[0-9a-f-]{36}$/i.test(id)) return json({ error: 'Invalid deposit ID.' }, 400);
   const admin = createAdminClient();
   const { data: deposit } = await admin.from('deposits').select('id,status').eq('id', id).maybeSingle();
