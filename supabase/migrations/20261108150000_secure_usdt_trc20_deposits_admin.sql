@@ -153,7 +153,7 @@ returns uuid
 language plpgsql
 security definer
 set search_path = public, pg_temp
-as $
+as $$
 declare v_deposit public.deposits%rowtype; v_ledger_id uuid;
 begin
   if coalesce(auth.role(), '') <> 'service_role' then raise exception 'service role required'; end if;
@@ -174,7 +174,7 @@ begin
   v_ledger_id := public.credit_deposit(p_deposit_id);
   return v_ledger_id;
 end;
-$;
+$$;
 revoke all on function public.confirm_and_credit_deposit(uuid,numeric,text,text,timestamptz,integer) from public, anon, authenticated;
 grant execute on function public.confirm_and_credit_deposit(uuid,numeric,text,text,timestamptz,integer) to service_role;
 
