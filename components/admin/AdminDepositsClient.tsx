@@ -42,7 +42,7 @@ export function AdminDepositsClient({ activeAddress }: Props) {
         <a className="text-sm text-accent underline" href={`https://tronscan.org/#/address/${activeAddress}`} target="_blank" rel="noreferrer">View this address on Tronscan</a>
       </> : <p className="text-sm text-neg">USDT deposits are temporarily unavailable. Check the server-side address and allowlist settings.</p>}
     </Card>
-    <div className="flex items-center justify-between"><p className="text-sm text-muted">Pending verification and manual review</p><Button variant="ghost" onClick={() => void load()}>Refresh</Button></div>
+    <div className="flex flex-wrap items-center justify-between gap-3"><p className="text-sm text-muted">Pending verification and manual review</p><div className="flex items-center gap-2"><a className="text-sm text-accent underline" href="/admin/deposits/reconciliation">USDT reconciliation report</a><Button variant="ghost" onClick={() => void load()}>Refresh</Button></div></div>
     <p className="rounded-xl border border-line p-3 text-xs leading-5 text-muted">Manual approval and crediting are disabled. Deposits are credited only after automated on-chain verification against the address pinned to the deposit.</p>
     {error && <p role="alert" className="rounded-xl border border-neg/40 p-3 text-sm text-neg">{error}</p>}
     {!rows.length ? <Card><p className="text-sm text-muted">No deposits currently need review.</p></Card> : rows.map(row => <Card key={row.id} className="space-y-3">
