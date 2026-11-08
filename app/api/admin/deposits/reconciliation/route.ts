@@ -296,8 +296,9 @@ export async function GET(request: Request) {
       historyPages: chain.pages,
       readOnly: true,
     });
-  } catch (error) {
-    console.error('USDT reconciliation report failed:', error instanceof Error ? error.message : 'unknown');
-    return json({ error: error instanceof Error ? error.message : 'Could not generate the reconciliation report.' }, 503);
+  } catch {
+    // Keep database/provider internals out of the administrator-facing response and logs.
+    console.error('USDT reconciliation report failed.');
+    return json({ error: 'Could not generate the reconciliation report. Check configuration and try again.' }, 503);
   }
 }
