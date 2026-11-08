@@ -112,10 +112,10 @@ export function UsdtDepositClient({ address, minimumDeposit, initialDeposits, in
 
     setSubmitting(true);
     try {
-      const response = await fetch('/api/deposits', {
+      const response = await fetch('/api/deposits/usdt-trc20/verify', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ txid: normalizedTxid, amount }),
+        body: JSON.stringify({ txid: normalizedTxid, claimedAmount: amount }),
       });
       const payload = await response.json();
       if (!response.ok) {
@@ -124,7 +124,7 @@ export function UsdtDepositClient({ address, minimumDeposit, initialDeposits, in
       }
       setTxid('');
       setAmount('');
-      setFormMessage('Transaction submitted. It is now pending verification; your wallet has not been credited yet.');
+      setFormMessage(payload.status === 'confirmed' ? 'Transfer verified and wallet credited.' : 'Transaction recorded for verification or manual review. Your wallet has not been credited yet.');
       await refreshDeposits();
     } catch {
       setFormMessage('Network error while submitting. Please try again.');
