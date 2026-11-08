@@ -155,12 +155,17 @@ async function mapLimit<T, R>(items: T[], limit: number, fn: (item: T) => Promis
   return output;
 }
 
-export async function GET() {
+export async function GET(request: Request) {
   const session = await createClient();
   const { data: { user } } = await session.auth.getUser();
   if (!user) return json({ error: 'Administrator access required.' }, 403);
   const { data: profile } = await session.from('profiles').select('is_admin').eq('id', user.id).maybeSingle();
   if (profile?.is_admin !== true) return json({ error: 'Administrator access required.' }, 403);
+
+  const url = new URL(request.url);
+  const ledgerOffsetRaw = url.searchParams.get('ledgerOffset') ?? '0';
+  const ledgerOffset = Number(ledgerOffsetRaw);
+  if (!Number.isSafeInteger(ledgerOffset) || ledgerOffset < 0 || ledgerOffset > 10000) return json({ error: 'Invalid ledger offset.' }, 400);
 
   const address = getActiveDepositAddress();
   const apiKey = process.env.TRONGRID_API_KEY;
@@ -179,6 +184,7 @@ export async function GET() {
     ]);
 
     let chainTotal = 0n;
+    let validTransferCount = 0;
     const incomingByTxid = new Map<string, { txid: string; amountUnits: bigint; fromAddresses: Set<string>; blockTimestamp: number | null }>();
     for (const row of chain.rows) {
       const txid = String(row.transaction_id ?? '').toLowerCase();
@@ -187,8 +193,8 @@ export async function GET() {
       const decimals = Number(row.token_info?.decimals ?? 6);
       const value = String(row.value ?? '');
       if (!/^[a-f0-9]{64}$/.test(txid) || to !== address || !/^[0-9]+$/.test(value) || decimals !== 6) continue;
-      if (row.token_info?.address && row.token_info.address !== contract) continue;
       const units = BigInt(value);
+      validTransferCount++;
       chainTotal = addUnits(chainTotal, units);
       const current = incomingByTxid.get(txid) ?? { txid, amountUnits: 0n, fromAddresses: new Set<string>(), blockTimestamp: null };
       current.amountUnits += units;
@@ -237,7 +243,7 @@ export async function GET() {
 
     const ledgerRows = ledger.rows;
     const depositsById = await readDepositsByIds(admin, [...new Set(ledgerRows.map(row => row.deposit_id).filter((id): id is string => Boolean(id)))]);
-    const rowsToVerify = ledgerRows.slice(0, MAX_LEDGER_CHECKS);
+    const rowsToVerify = ledgerRows.slice(ledgerOffset, ledgerOffset + MAX_LEDGER_CHECKS);
     const unverifiable = await mapLimit(rowsToVerify, 10, async (ledgerRow) => {
       const deposit = ledgerRow.deposit_id ? depositsById.get(ledgerRow.deposit_id) : undefined;
       const base = {
@@ -272,16 +278,18 @@ export async function GET() {
       chainTotal: unitsToDecimal(chainTotal),
       confirmedDepositTotal: unitsToDecimal(confirmedTotal),
       difference: unitsToDecimal(chainTotal - confirmedTotal),
-      chainTransferCount: incomingByTxid.size,
+      chainTransferCount: validTransferCount,
       confirmedDepositCount: confirmedDeposits.rows.length,
       unmatchedTransfers: unmatched,
       transferDiscrepancies,
       unverifiableLedgerEntries: issues,
       ledgerRowsTotal: ledgerRows.length,
-      ledgerRowsChecked: rowsToVerify.length,
+      ledgerRowsChecked: Math.min(ledgerOffset + rowsToVerify.length, ledgerRows.length),
+      ledgerRowsOffset: ledgerOffset,
+      ledgerRowsHasMore: ledgerOffset + rowsToVerify.length < ledgerRows.length,
       historyComplete: chain.complete,
       depositRowsComplete: confirmedDeposits.complete && allDepositRows.complete,
-      ledgerRowsComplete: ledger.complete && ledgerRows.length <= MAX_LEDGER_CHECKS,
+      ledgerRowsComplete: ledger.complete && ledgerOffset + rowsToVerify.length >= ledgerRows.length,
       historyPages: chain.pages,
       readOnly: true,
     });
