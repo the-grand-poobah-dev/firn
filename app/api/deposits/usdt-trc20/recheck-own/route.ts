@@ -4,6 +4,7 @@ import { createAdminClient } from '@/lib/supabase/admin';
 import { verifyTronUsdtTransfer } from '@/lib/deposits/tron';
 
 export const dynamic = 'force-dynamic';
+export const maxDuration = 30;
 const json = (body: unknown, status = 200) => NextResponse.json(body, { status, headers: { 'Cache-Control': 'no-store' } });
 export async function POST(request: Request) {
   const session = await createClient();
