@@ -68,10 +68,10 @@ describe('USDT TRC20 verification',()=>{
     vi.stubEnv('ACCEPTED_DEPOSIT_ADDRESSES','not-a-tron-address');
     expect(getActiveDepositAddress()).toBeNull();
   });
-  it('fails closed when the kill switch is unset and only enables deposits explicitly',()=>{
+  it('keeps deposits disabled until sender-wallet ownership proof is implemented',()=>{
     expect(areUsdtDepositsEnabled()).toBe(false);
     vi.stubEnv('USDT_DEPOSITS_ENABLED','true');
-    expect(areUsdtDepositsEnabled()).toBe(true);
+    expect(areUsdtDepositsEnabled()).toBe(false);
     vi.stubEnv('USDT_DEPOSITS_ENABLED','false');
     expect(areUsdtDepositsEnabled()).toBe(false);
   });
