@@ -36,12 +36,14 @@ export async function POST(request: Request) {
   const { data: { user }, error: authError } = await userClient.auth.getUser();
   if (authError || !user) return jsonError('Please sign in before submitting a transaction.', 401);
 
-  let body: { txid?: unknown; amount?: unknown };
+  let parsedBody: unknown;
   try {
-    body = await request.json();
+    parsedBody = await request.json();
   } catch {
     return jsonError('Invalid request body.', 400);
   }
+  if (!parsedBody || typeof parsedBody !== 'object') return jsonError('Invalid request body.', 400);
+  const body = parsedBody as { txid?: unknown; amount?: unknown };
 
   const txid = typeof body.txid === 'string' ? body.txid.trim() : '';
   const amount = typeof body.amount === 'string' ? body.amount.trim() : String(body.amount ?? '');
