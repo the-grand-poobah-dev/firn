@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 
 type Transfer = { txid: string; amount: string; fromAddresses: string[]; blockTimestamp: number | null; tronscanUrl: string };
+type TransferDiscrepancy = { txid: string; chainAmount: string; supabaseConfirmedAmount: string; depositStatuses: string[]; tronscanUrl: string };
 type LedgerIssue = { ledgerId: string; depositId: string | null; txid: string | null; ledgerAmount: string; verifiedAmount: string | null; tronscanUrl: string | null; reason: string };
 type Report = {
   generatedAt: string;
@@ -15,6 +16,7 @@ type Report = {
   chainTransferCount: number;
   confirmedDepositCount: number;
   unmatchedTransfers: Transfer[];
+  transferDiscrepancies: TransferDiscrepancy[];
   unverifiableLedgerEntries: LedgerIssue[];
   ledgerRowsTotal: number;
   ledgerRowsChecked: number;
@@ -67,6 +69,16 @@ export function UsdtReconciliationClient() {
         <Card><p className="text-xs text-muted">Confirmed deposits in Supabase</p><p className="mt-1 text-xl font-semibold tabular-nums">{money(report.confirmedDepositTotal)}</p><p className="text-xs text-muted">{report.confirmedDepositCount} deposit rows</p></Card>
         <Card className={mismatch ? 'border border-neg/60' : ''}><p className="text-xs text-muted">Difference (chain minus Supabase)</p><p className={`mt-1 text-xl font-semibold tabular-nums ${mismatch ? 'text-neg' : ''}`}>{money(report.difference)}</p><p className="text-xs text-muted">{mismatch ? 'Amounts do not reconcile' : 'Totals match'}</p></Card>
       </div>
+
+      <Card className="space-y-3">
+        <div className="flex flex-wrap items-center justify-between gap-2"><strong className="text-sm">TXIDs behind amount differences</strong><span className={report.transferDiscrepancies.length ? 'text-sm font-semibold text-neg' : 'text-sm text-muted'}>{report.transferDiscrepancies.length} mismatch(es)</span></div>
+        <p className="text-xs text-muted">Every TXID where the confirmed chain amount differs from the confirmed Supabase amount for this receiving address, including deposit rows still pending or rejected.</p>
+        {!report.transferDiscrepancies.length ? <p className="text-sm text-muted">No TXID-level amount differences found.</p> : report.transferDiscrepancies.map(row => <div key={row.txid} className="space-y-2 rounded-xl border border-neg/50 bg-neg/5 p-3">
+          <div className="flex flex-wrap items-center justify-between gap-2"><span className="text-xs font-semibold text-neg">Chain: {money(row.chainAmount)} · Supabase: {money(row.supabaseConfirmedAmount)}</span><a className="text-xs text-accent underline" href={row.tronscanUrl} target="_blank" rel="noreferrer">Tronscan</a></div>
+          <code className="block break-all text-xs text-neg">{row.txid}</code>
+          <p className="text-xs text-muted">Deposit status: {row.depositStatuses.length ? row.depositStatuses.join(', ') : 'No matching deposit row'}</p>
+        </div>)}
+      </Card>
 
       <Card className="space-y-3">
         <div className="flex flex-wrap items-center justify-between gap-2"><strong className="text-sm">Unclaimed incoming transfers</strong><span className={report.unmatchedTransfers.length ? 'text-sm font-semibold text-neg' : 'text-sm text-muted'}>{report.unmatchedTransfers.length} unmatched TXID(s)</span></div>
