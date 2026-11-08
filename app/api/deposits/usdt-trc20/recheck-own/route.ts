@@ -20,10 +20,10 @@ export async function POST(request: Request) {
   const { data: allowed, error: limitError } = await admin.rpc('consume_deposit_rate_limit', { p_user_id: user.id });
   if (limitError) return json({ error: 'Recheck is temporarily unavailable.' }, 503);
   if (!allowed) return json({ error: 'Too many attempts. Try again later.' }, 429);
-  const { data: deposit } = await session.from('deposits').select('id,txid,status').eq('id', id).eq('user_id', user.id).maybeSingle();
+  const { data: deposit } = await session.from('deposits').select('id,txid,status,receiving_address').eq('id', id).eq('user_id', user.id).maybeSingle();
   if (!deposit || !['pending_verification','needs_review'].includes(deposit.status)) return json({ error: 'This deposit is not eligible for rechecking.' }, 404);
   try {
-    const result = await verifyTronUsdtTransfer(deposit.txid);
+    const result = await verifyTronUsdtTransfer(deposit.txid, deposit.receiving_address);
     if (result.state === 'verified') {
       const { error } = await admin.rpc('confirm_and_credit_deposit', {
         p_deposit_id: id,
