@@ -58,6 +58,16 @@ describe('USDT TRC20 verification',()=>{
     vi.stubEnv('ACCEPTED_DEPOSIT_ADDRESSES',recipient);
     expect(getActiveDepositAddress()).toBeNull();
   });
+  it('allows only the active receiving address when the optional historical allowlist is unset',()=>{
+    vi.stubEnv('DEPOSIT_USDT_TRC20_ADDRESS',recipient);
+    vi.stubEnv('ACCEPTED_DEPOSIT_ADDRESSES','');
+    expect(getActiveDepositAddress()).toBe(recipient);
+  });
+  it('rejects an invalid explicit address allowlist',()=>{
+    vi.stubEnv('DEPOSIT_USDT_TRC20_ADDRESS',recipient);
+    vi.stubEnv('ACCEPTED_DEPOSIT_ADDRESSES','not-a-tron-address');
+    expect(getActiveDepositAddress()).toBeNull();
+  });
   it('fails closed when the kill switch is unset and only enables deposits explicitly',()=>{
     expect(areUsdtDepositsEnabled()).toBe(false);
     vi.stubEnv('USDT_DEPOSITS_ENABLED','true');
@@ -82,6 +92,11 @@ describe('USDT TRC20 verification',()=>{
     const result=await verifyTronUsdtTransfer(txid,olderRecipient);
     expect(result.state).toBe('verified');
     if(result.state==='verified')expect(result.toAddress).toBe(olderRecipient);
+  });
+  it('fails closed if the configured USDT contract is not the official TRON contract',async()=>{
+    setVerificationEnv();
+    vi.stubEnv('USDT_TRC20_CONTRACT',olderRecipient);
+    await expect(verifyTronUsdtTransfer(txid,recipient)).rejects.toThrow('official TRON USDT contract');
   });
   it('rejects a look-alike token contract',async()=>{
     setVerificationEnv();
