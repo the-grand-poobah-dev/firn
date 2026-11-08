@@ -35,34 +35,24 @@ export async function POST(request: Request) {
   const amount = typeof body.amount === 'string' ? body.amount.trim() : '';
   const reason = typeof body.reason === 'string' ? body.reason.trim() : '';
   if (!/^[0-9a-f-]{36}$/i.test(id)) return json({ error: 'Invalid deposit ID.' }, 400);
+  if (action !== 'approve' && action !== 'reject') return json({ error: 'Unsupported review action.' }, 400);
+  if (action === 'approve' && (!/^(?:0|[1-9]\\d{0,20})(?:\\.\\d{1,6})?$/.test(amount) || Number(amount) <= 0)) {
+    return json({ error: 'Enter a positive amount with at most six decimal places.' }, 400);
+  }
+  if (action === 'reject' && (reason.length < 5 || reason.length > 500)) {
+    return json({ error: 'Provide a rejection reason between 5 and 500 characters.' }, 400);
+  }
   const admin = createAdminClient();
-  const { data: deposit } = await admin.from('deposits').select('id,status').eq('id', id).maybeSingle();
-  if (!deposit || !['pending_verification','needs_review'].includes(deposit.status)) return json({ error: 'Deposit is no longer awaiting review.' }, 409);
-  if (action === 'approve') {
-    if (!/^(?:0|[1-9]\d{0,20})(?:\.\d{1,6})?$/.test(amount) || Number(amount) <= 0) return json({ error: 'Enter a positive amount with at most six decimal places.' }, 400);
-    const now = new Date().toISOString();
-    const { data: updated, error: updateError } = await admin.from('deposits').update({
-      status: 'confirmed', verified_amount: amount, reviewed_by: actor.id, reviewed_at: now,
-      failure_reason: null, updated_at: now,
-    }).eq('id', id).in('status', ['pending_verification','needs_review']).select('id').maybeSingle();
-    if (updateError || !updated) return json({ error: 'Deposit changed concurrently; refresh before reviewing.' }, 409);
-    const { error: auditError } = await admin.from('deposit_review_events').insert({ deposit_id: id, actor_id: actor.id, action: 'approved', approved_amount: amount });
-    if (auditError) { console.error('Deposit approval audit write failed:', auditError.code); return json({ error: 'Approval saved but audit logging failed. Contact support before retrying.' }, 503); }
-    const { error: creditError } = await admin.rpc('credit_deposit', { p_deposit_id: id });
-    if (creditError) { console.error('Admin credit failed:', creditError.code); return json({ error: 'Approval recorded, but wallet credit did not complete. It is safe to retry credit after checking the deposit.' }, 503); }
-    return json({ ok: true });
+  const { data, error } = await admin.rpc('review_deposit', {
+    p_deposit_id: id,
+    p_actor_id: actor.id,
+    p_action: action === 'approve' ? 'approved' : 'rejected',
+    p_amount: action === 'approve' ? amount : null,
+    p_reason: action === 'reject' ? reason : null,
+  });
+  if (error) {
+    console.error('Admin deposit review transaction failed:', error.code);
+    return json({ error: 'The deposit could not be reviewed. Refresh and try again.' }, 409);
   }
-  if (action === 'reject') {
-    if (reason.length < 5 || reason.length > 500) return json({ error: 'Provide a rejection reason between 5 and 500 characters.' }, 400);
-    const now = new Date().toISOString();
-    const { data: updated, error: updateError } = await admin.from('deposits').update({
-      status: 'rejected', rejection_reason: reason, failure_reason: reason,
-      reviewed_by: actor.id, reviewed_at: now, updated_at: now,
-    }).eq('id', id).in('status', ['pending_verification','needs_review']).select('id').maybeSingle();
-    if (updateError || !updated) return json({ error: 'Deposit changed concurrently; refresh before reviewing.' }, 409);
-    const { error: auditError } = await admin.from('deposit_review_events').insert({ deposit_id: id, actor_id: actor.id, action: 'rejected', reason });
-    if (auditError) { console.error('Deposit rejection audit write failed:', auditError.code); return json({ error: 'Rejection saved but audit logging failed. Contact support.' }, 503); }
-    return json({ ok: true });
-  }
-  return json({ error: 'Unsupported review action.' }, 400);
+  return json({ ok: true, ledgerId: data ?? null });
 }
