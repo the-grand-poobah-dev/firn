@@ -1,6 +1,7 @@
 import { requireUser } from '@/lib/auth';
 import { TopBar } from '@/components/app/TopBar';
 import { UsdtDepositClient } from '@/components/wallet/UsdtDepositClient';
+import { areUsdtDepositsEnabled, getActiveDepositAddress } from '@/lib/deposits/config';
 
 export const dynamic = 'force-dynamic';
 
