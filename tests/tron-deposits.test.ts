@@ -1,10 +1,22 @@
+import { createHash } from 'node:crypto';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 vi.mock('server-only', () => ({}));
 import { decimalToUnits, isDuplicateTxidError, isValidTronAddress, verifyTronUsdtTransfer } from '../lib/deposits/tron';
 import { areUsdtDepositsEnabled, getActiveDepositAddress } from '../lib/deposits/config';
 
-const recipient = 'TJRabPrwbZy45sbavfcjinPJC18kjpRTv8';
-const olderRecipient = 'TEFtmBSumTS3yRjestr3YjK6eMwoa5n4Ha';
+function testAddress(fill: number): string {
+  const payload = Buffer.concat([Buffer.from([0x41]), Buffer.alloc(20, fill)]);
+  const first = createHash('sha256').update(payload).digest();
+  const checksum = createHash('sha256').update(first).digest().subarray(0, 4);
+  const bytes = Buffer.concat([payload, checksum]);
+  let n = BigInt('0x' + bytes.toString('hex'));
+  let out = '';
+  while (n > 0n) { const digit = Number(n % 58n); out = base58[digit] + out; n /= 58n; }
+  for (const byte of bytes) { if (byte !== 0) break; out = '1' + out; }
+  return out;
+}
+const recipient = testAddress(1);
+const olderRecipient = testAddress(2);
 const contract = 'TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t';
 const txid = 'a'.repeat(64);
 const base58 = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
