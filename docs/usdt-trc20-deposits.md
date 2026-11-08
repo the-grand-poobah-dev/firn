@@ -4,7 +4,7 @@
 
 - Network: TRON / TRC20
 - Asset: Tether USD (USDT)
-- FIRN receiving wallet: `TEFtmBSumTS3yRjestr3YjK6eMwoa5n4Ha`
+- FIRN receiving wallet: supplied only through the server-side `DEPOSIT_USDT_TRC20_ADDRESS` environment variable.
 - Official USDT TRON contract: `TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t`
 - Minimum: `10` USDT by default (configure `MIN_DEPOSIT_USDT`)
 
