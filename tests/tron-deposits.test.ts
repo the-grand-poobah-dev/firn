@@ -58,7 +58,9 @@ describe('USDT TRC20 verification',()=>{
     vi.stubEnv('ACCEPTED_DEPOSIT_ADDRESSES',recipient);
     expect(getActiveDepositAddress()).toBeNull();
   });
-  it('turns deposits off when the kill switch is false and defaults to enabled',()=>{
+  it('fails closed when the kill switch is unset and only enables deposits explicitly',()=>{
+    expect(areUsdtDepositsEnabled()).toBe(false);
+    vi.stubEnv('USDT_DEPOSITS_ENABLED','true');
     expect(areUsdtDepositsEnabled()).toBe(true);
     vi.stubEnv('USDT_DEPOSITS_ENABLED','false');
     expect(areUsdtDepositsEnabled()).toBe(false);
