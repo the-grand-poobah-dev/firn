@@ -1,3 +1,41 @@
-'use client';import {useState} from 'react';import {Card} from '@/components/ui/Card';import {Button} from '@/components/ui/Button';import {Chip} from '@/components/ui/Chip';
-type M='mpesa'|'card'|'bank'|'crypto';const methods:{id:M;name:string;note:string;fee:string}[]=[{id:'mpesa',name:'M-Pesa',note:'Instant',fee:'No fee'},{id:'card',name:'Card',note:'Secure checkout',fee:'1.2% fee'},{id:'bank',name:'Bank transfer',note:'1–2 business days',fee:'Free'},{id:'crypto',name:'USDT · TRC20',note:'Blockchain confirmation',fee:'Free'}];
-export function DepositForm(){const [amount,setAmount]=useState('500'),[method,setMethod]=useState<M>('mpesa'),[phone,setPhone]=useState(''),[busy,setBusy]=useState(false),[error,setError]=useState(''),[result,setResult]=useState<Record<string,unknown>|null>(null),v=Number(amount),fee=method==='card'?Math.round(v*.012*100)/100:0;async function submit(){setBusy(true);setError('');setResult(null);try{const r=await fetch('/api/wallet/deposit',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({amount:v,method,phone:method==='mpesa'?phone:undefined})}),d=await r.json();if(!r.ok)throw new Error(d.error||'Payment could not start.');setResult(d);if(d.checkoutUrl)window.location.assign(String(d.checkoutUrl));}catch(e){setError(e instanceof Error?e.message:'Payment could not start.');}finally{setBusy(false);}}return <div className="space-y-5"><Card className="space-y-2"><p className="label">AMOUNT TO ADD · USD</p><div className="flex items-center gap-2"><span className="text-2xl text-muted">$</span><input aria-label="Deposit amount" type="number" inputMode="decimal" min="1" max="100000" step="0.01" value={amount} onChange={e=>setAmount(e.target.value)} className="w-full bg-transparent text-4xl font-semibold outline-none"/></div><p className="text-sm text-muted">≈ KES {(Math.max(0,v)*135).toLocaleString('en-KE',{maximumFractionDigits:0})} <span className="text-xs">(illustrative rate: 135 / USD)</span></p><div className="flex flex-wrap gap-2">{[100,250,500,1000].map(n=><Chip key={n} active={v===n} onClick={()=>setAmount(String(n))}>{'$'+n}</Chip>)}</div></Card><section className="space-y-2"><h2 className="font-semibold">Payment method</h2>{methods.map(m=><button type="button" key={m.id} onClick={()=>{setMethod(m.id);setResult(null);}} className={'flex w-full items-center gap-3 rounded-2xl border p-4 text-left '+(method===m.id?'border-accent bg-accent/10':'border-line bg-card')}><span className="grid size-9 place-items-center rounded-xl bg-card2 text-sm font-semibold">{m.id==='mpesa'?'M':m.id==='card'?'▰':m.id==='bank'?'⌂':'₮'}</span><span className="min-w-0 flex-1"><span className="block text-sm font-semibold">{m.name}</span><span className="block text-xs text-muted">{m.note}</span></span><span className="text-xs text-muted">{m.fee}</span></button>)}</section>{method==='mpesa'&&<Card className="space-y-2"><label htmlFor="mpesa-phone" className="text-sm font-semibold">M-Pesa phone number</label><input id="mpesa-phone" type="tel" autoComplete="tel" value={phone} onChange={e=>setPhone(e.target.value)} placeholder="+254 7XX XXX XXX" className="w-full rounded-xl border border-line bg-card2 px-3 py-3 text-base outline-none"/><p className="text-xs text-muted">Stored to match the request; masked in payment history.</p></Card>}{method==='card'&&<Card><div className="flex justify-between text-sm"><span className="text-muted">Card fee (1.2%)</span><strong>{'$'+fee.toFixed(2)}</strong></div><div className="mt-2 flex justify-between text-sm"><span className="text-muted">Total charged</span><strong>{'$'+(v+fee).toFixed(2)}</strong></div><p className="mt-2 text-xs text-muted">Your wallet receives the amount entered. Card details stay with Stripe.</p></Card>}{result&&<Card className="space-y-2 border-accent/40"><p className="text-sm font-semibold">{String(result.message||'Payment request created.')}</p>{Boolean(result.reference)&&<p className="text-sm">Reference: <strong>{String(result.reference)}</strong></p>}{Boolean(result.payAddress)&&<><p className="break-all text-sm">{String(result.payAddress)}</p><p className="font-semibold">{String(result.payAmount)} USDT TRC20</p></>}{Boolean(result.bank)&&<p className="break-all text-xs text-muted">{JSON.stringify(result.bank)}</p>}</Card>}{error&&<p role="alert" className="text-sm text-neg">{error}</p>}<Button className="w-full" disabled={busy||!Number.isFinite(v)||v<1||v>100000||(method==='mpesa'&&phone.replace(/\D/g,'').length<9)} onClick={submit}>{busy?'Starting payment…':method==='mpesa'?'Send prompt to phone':method==='card'?'Continue to secure card payment':method==='bank'?'Get bank transfer details':'Create USDT payment'}</Button></div>;}
+'use client';
+import Link from 'next/link';
+import { Card } from '@/components/ui/Card';
+
+type Props = { usdtEnabled: boolean };
+
+const comingSoon = ['M-Pesa', 'Debit or credit card', 'Bank transfer'];
+
+export function DepositForm({ usdtEnabled }: Props) {
+  return (
+    <div className="space-y-4">
+      <Card className="space-y-3">
+        <div>
+          <p className="text-sm font-semibold">USDT · TRON (TRC20)</p>
+          <p className="mt-1 text-xs leading-5 text-muted">
+            Send Tether to FIRN's verified receiving address. Wallet credit follows confirmed on-chain verification.
+          </p>
+        </div>
+        {usdtEnabled ? (
+          <Link href="/wallet/deposit/usdt" className="flex min-h-12 items-center justify-center rounded-full bg-accent px-4 text-sm font-semibold text-accent-on">
+            Continue to USDT deposit
+          </Link>
+        ) : (
+          <button type="button" disabled className="min-h-12 w-full cursor-not-allowed rounded-full border border-line bg-card2 text-sm font-semibold text-muted">
+            USDT deposits temporarily unavailable
+          </button>
+        )}
+      </Card>
+      <Card className="space-y-3">
+        <p className="text-sm font-semibold">Other payment methods</p>
+        {comingSoon.map(method => (
+          <button key={method} type="button" disabled aria-disabled="true" className="flex min-h-12 w-full cursor-not-allowed items-center justify-between rounded-xl border border-line bg-card2 px-4 text-left text-sm opacity-60">
+            <span>{method}</span>
+            <span className="rounded-full bg-card px-2 py-1 text-[10px] font-semibold text-muted">Coming soon</span>
+          </button>
+        ))}
+        <p className="text-xs leading-5 text-muted">These options are disabled and cannot initiate a payment.</p>
+      </Card>
+    </div>
+  );
+}
