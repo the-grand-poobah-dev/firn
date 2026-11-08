@@ -27,7 +27,7 @@ Never add service-role keys, TronGrid API keys, or cron secrets to Git, client-s
 
 ## Database setup
 
-Apply `supabase/migrations/20261108150000_secure_usdt_trc20_deposits_admin.sql` to the **development database first**. It adds:
+Apply these migrations in order to the **development database first**:\n1. `supabase/migrations/20261108150000_secure_usdt_trc20_deposits_admin.sql` creates the deposit/admin foundation.\n2. `supabase/migrations/20261108193000_pin_usdt_deposit_recipients.sql` pins the receiving address per deposit, enforces the pinned-recipient check before crediting, and disables manual admin crediting.\n\nThe first migration adds:
 - `profiles.is_admin`, with a trigger preventing self-promotion
 - `deposits`, owner/admin read policies, unique TXIDs, and expiry metadata
 - `wallet_ledger.deposit_id` unique linkage and six-decimal ledger precision
@@ -62,7 +62,7 @@ Vercel Hobby supports daily cron schedules only. The configured cron is daily at
 2. Configure all required environment variables in Vercel Preview and Production (never expose secrets publicly). `ACCEPTED_DEPOSIT_ADDRESSES` must include `DEPOSIT_USDT_TRC20_ADDRESS` and every older pinned recipient that still needs rechecking.
 3. Confirm the configured wallet address and contract match the operator's self-custody wallet and the official TRON USDT contract.
 4. Run CI: lint, TypeScript, mocked TronGrid tests, and production build.
-5. Test success, look-alike token, wrong recipient, underpayment, duplicate TXID, unconfirmed transaction, timeout, retry, admin approval, rejection, and double-credit attempts.
+5. Test success, look-alike token, wrong recipient, underpayment, duplicate TXID, unconfirmed transaction, timeout, retry, rejected manual approval, rejection, and double-credit attempts.
 6. Verify exactly one wallet ledger row per deposit and that its amount equals `verified_amount`, not `claimed_amount`.
 7. Only then request explicit approval to apply the migration to production and merge/deploy.
 
