@@ -30,7 +30,7 @@ Never add service-role keys, TronGrid API keys, or cron secrets to Git, client-s
 Apply these migrations in order to the **development database first**:
 1. `supabase/migrations/20261108150000_secure_usdt_trc20_deposits_admin.sql` creates the deposit/admin foundation.
 2. `supabase/migrations/20261108193000_pin_usdt_deposit_recipients.sql` pins the receiving address per deposit, enforces the pinned-recipient check before crediting, and disables manual admin crediting.
-3. `supabase/migrations/20261108210000_revoke_demo_deposit_credit.sql` revokes client execution of the legacy `deposit_demo` wallet-credit RPC and direct client execution of the auth profile trigger function.
+3. `supabase/migrations/20261108210000_revoke_demo_deposit_credit.sql` revokes client execution of the legacy `deposit_demo` wallet-credit RPC and direct client execution of the auth profile trigger function; removes broad browser table grants on deposits/ledger/review events; and limits profile updates to ordinary profile/preferences columns.
 
 The first migration adds:
 - `profiles.is_admin`, with a trigger preventing self-promotion
@@ -38,6 +38,8 @@ The first migration adds:
 - `wallet_ledger.deposit_id` unique linkage and six-decimal ledger precision
 - `deposit_review_events` for reviewer audit history
 - service-role-only rate limiting and idempotent `credit_deposit(uuid)`
+
+The third migration also prevents signed-in clients from changing `kyc_status`, `referral_code`, `is_admin`, or wallet/deposit records directly. The legacy `deposit_demo` RPC is removed from all API roles.
 
 Do not apply to production until development migration, security, CI, and end-to-end tests pass and the owner explicitly approves production migration.
 
