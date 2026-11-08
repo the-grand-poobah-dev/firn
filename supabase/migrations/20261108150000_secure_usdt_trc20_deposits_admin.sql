@@ -232,16 +232,22 @@ grant execute on function public.review_deposit(uuid,uuid,text,numeric,text) to 
 create or replace function public.prevent_profile_admin_escalation()
 returns trigger language plpgsql security definer set search_path = public, pg_temp as $$
 begin
-  if new.is_admin is distinct from old.is_admin
-     and coalesce(current_setting('request.jwt.claim.role', true), '') <> 'service_role'
-     and session_user <> 'postgres' then
+  if TG_OP = 'INSERT' then
+    if new.is_admin is true
+       and coalesce(auth.role(), '') <> 'service_role'
+       and session_user <> 'postgres' then
+      raise exception 'is_admin can only be assigned by a database administrator';
+    end if;
+  elsif new.is_admin is distinct from old.is_admin
+       and coalesce(auth.role(), '') <> 'service_role'
+       and session_user <> 'postgres' then
     raise exception 'is_admin can only be changed by a database administrator';
   end if;
   return new;
 end;
 $$;
 drop trigger if exists prevent_profile_admin_escalation on public.profiles;
-create trigger prevent_profile_admin_escalation before update on public.profiles
+create trigger prevent_profile_admin_escalation before insert or update on public.profiles
 for each row execute function public.prevent_profile_admin_escalation();
 
 commit;
