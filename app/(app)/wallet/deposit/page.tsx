@@ -7,8 +7,9 @@ import { areUsdtDepositsEnabled, getActiveDepositAddress } from '@/lib/deposits/
 
 export const dynamic = 'force-dynamic';
 
-export default function DepositPage({ searchParams }: { searchParams: { returnTo?: string; method?: string } }) {
-  const returnTo = searchParams.returnTo?.startsWith('/save/') ? searchParams.returnTo : '/wallet';
+export default async function DepositPage({ searchParams }: { searchParams: Promise<{ returnTo?: string; method?: string }> }) {
+  const query = await searchParams;
+  const returnTo = query.returnTo?.startsWith('/save/') ? query.returnTo : '/wallet';
   const usdtEnabled = areUsdtDepositsEnabled() && Boolean(getActiveDepositAddress());
 
   return (
@@ -20,7 +21,7 @@ export default function DepositPage({ searchParams }: { searchParams: { returnTo
         <p className="mt-2 text-sm text-muted">{usdtEnabled ? 'USDT on Tron is available.' : 'Deposits are temporarily unavailable.'} Other payment methods will be enabled as their integrations launch.</p>
       </header>
 
-      <PaymentMethodSelector selectedId={searchParams.method} returnTo={returnTo} usdtEnabled={usdtEnabled} />
+      <PaymentMethodSelector selectedId={query.method} returnTo={returnTo} usdtEnabled={usdtEnabled} />
 
       <Card className="border-warm/40">
         <div className="flex gap-2">
