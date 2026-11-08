@@ -168,7 +168,7 @@ export async function GET() {
 
   try {
     const admin = createAdminClient();
-    const [chain, confirmedDeposits, ledger, allDepositTxids] = await Promise.all([
+    const [chain, confirmedDeposits, ledger, allDepositRows] = await Promise.all([
       loadConfirmedIncoming(address, contract, apiKey),
       readConfirmedDepositsForAddress(admin, address),
       readLedgerRows(admin),
