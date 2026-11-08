@@ -13,7 +13,7 @@ export function DepositForm({ usdtEnabled }: Props) {
         <div>
           <p className="text-sm font-semibold">USDT · TRON (TRC20)</p>
           <p className="mt-1 text-xs leading-5 text-muted">
-            Send Tether to FIRN's verified receiving address. Wallet credit follows confirmed on-chain verification.
+            Send Tether to FIRN&apos;s verified receiving address. Wallet credit follows confirmed on-chain verification.
           </p>
         </div>
         {usdtEnabled ? (
