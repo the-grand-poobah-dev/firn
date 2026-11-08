@@ -14,7 +14,7 @@ The receiving address is read only from the server-side `DEPOSIT_USDT_TRC20_ADDR
 
 | Variable | Purpose | Who supplies it |
 |---|---|---|
-| `DEPOSIT_USDT_TRC20_ADDRESS` | Canonical receiving wallet above | FIRN operator |
+| `DEPOSIT_USDT_TRC20_ADDRESS` | Current receiving wallet (valid TRON Base58Check address) | FIRN operator |\n| `ACCEPTED_DEPOSIT_ADDRESSES` | Comma-separated allowlist containing the current wallet and any older wallets with pending deposits | FIRN operator |\n| `USDT_DEPOSITS_ENABLED` | Deposit kill switch; `true` or unset enables deposits, `false` disables new submissions | FIRN operator |
 | `USDT_TRC20_CONTRACT` | Official contract above | FIRN operator |
 | `MIN_DEPOSIT_USDT` | Minimum verified amount, default 10 | FIRN operator |
 | `TRONGRID_API_KEY` | Authenticated TronGrid reads | FIRN operator |
@@ -46,10 +46,10 @@ Get the UUID from Supabase Authentication → Users. Do not use an email string 
 
 ## Runtime behavior
 
-- `POST /api/deposits/usdt-trc20/verify`: authenticated claim submission, per-user rate limit, unique-TXID enforcement, solidified transaction body and receipt verification, official contract Transfer log decoding, recipient/minimum checks, and crediting the verified six-decimal amount only.
+- `POST /api/deposits/usdt-trc20/verify`: authenticated claim submission, per-user rate limit, unique-TXID enforcement, immutable receiving-address snapshot, allowlist enforcement, solidified transaction body and receipt verification, official contract Transfer log decoding, recipient/minimum checks, and crediting the verified six-decimal amount only.
 - `POST /api/deposits/usdt-trc20/recheck-own`: authenticated owner-only manual recheck for that user's pending deposit.
 - `GET /api/deposits/usdt-trc20/recheck`: CRON_SECRET-protected scheduled retry and 72-hour expiry sweep.
-- `/admin/deposits`: admin-only manual review; approval requires an operator-entered amount and calls `credit_deposit`; rejection requires a reason. Reviewer ID and timestamp are recorded.
+- `/admin/deposits`: admin-only review queue and active receiving-address display with a Tronscan link. Administrators may reject with a reason; manual approval/crediting is disabled. Only automated on-chain verification can credit a deposit.
 - `GET /api/deposits`: own-deposit status only.
 
 Vercel Hobby supports daily cron schedules only. The configured cron is daily at 03:00 UTC; users can manually recheck pending claims in the app. If the Vercel plan is upgraded to Pro, a more frequent schedule can be selected after checking plan limits.
@@ -57,8 +57,8 @@ Vercel Hobby supports daily cron schedules only. The configured cron is daily at
 ## Pre-launch verification checklist
 
 1. Apply migration to development Supabase and verify RLS with normal-user and admin sessions.
-2. Configure all six environment variables in Vercel Preview and Production (never expose secrets publicly).
-3. Confirm the configured wallet address and contract match this runbook.
+2. Configure all required environment variables in Vercel Preview and Production (never expose secrets publicly). `ACCEPTED_DEPOSIT_ADDRESSES` must include `DEPOSIT_USDT_TRC20_ADDRESS` and every older pinned recipient that still needs rechecking.
+3. Confirm the configured wallet address and contract match the operator's self-custody wallet and the official TRON USDT contract.
 4. Run CI: lint, TypeScript, mocked TronGrid tests, and production build.
 5. Test success, look-alike token, wrong recipient, underpayment, duplicate TXID, unconfirmed transaction, timeout, retry, admin approval, rejection, and double-credit attempts.
 6. Verify exactly one wallet ledger row per deposit and that its amount equals `verified_amount`, not `claimed_amount`.
