@@ -9,7 +9,7 @@ export const maxDuration = 60;
 const DEFAULT_CONTRACT = 'TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t';
 const PAGE_SIZE = 200;
 const MAX_HISTORY_PAGES = 25;
-const MAX_LEDGER_CHECKS = 25;
+const MAX_LEDGER_CHECKS = 40;
 const json = (data: unknown, status = 200) => NextResponse.json(data, { status, headers: { 'Cache-Control': 'no-store' } });
 
 type TronTransfer = {
@@ -238,7 +238,7 @@ export async function GET() {
     const ledgerRows = ledger.rows;
     const depositsById = await readDepositsByIds(admin, [...new Set(ledgerRows.map(row => row.deposit_id).filter((id): id is string => Boolean(id)))]);
     const rowsToVerify = ledgerRows.slice(0, MAX_LEDGER_CHECKS);
-    const unverifiable = await mapLimit(rowsToVerify, 5, async (ledgerRow) => {
+    const unverifiable = await mapLimit(rowsToVerify, 10, async (ledgerRow) => {
       const deposit = ledgerRow.deposit_id ? depositsById.get(ledgerRow.deposit_id) : undefined;
       const base = {
         ledgerId: ledgerRow.id,
