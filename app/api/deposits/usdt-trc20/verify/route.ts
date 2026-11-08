@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { isDuplicateTxidError, verifyTronUsdtTransfer } from '@/lib/deposits/tron';
+import { areUsdtDepositsEnabled, getActiveDepositAddress } from '@/lib/deposits/config';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 30;
@@ -13,6 +14,9 @@ export async function POST(request: Request) {
   const session = await createClient();
   const { data: { user } } = await session.auth.getUser();
   if (!user) return response({ error: 'Authentication required.' }, 401);
+  if (!areUsdtDepositsEnabled()) return response({ error: 'USDT deposits are temporarily unavailable.' }, 503);
+  const address = getActiveDepositAddress();
+  if (!address) return response({ error: 'USDT deposits are temporarily unavailable.' }, 503);
   let parsed: unknown;
   try { parsed = await request.json(); } catch { return response({ error: 'Invalid JSON.' }, 400); }
   if (!parsed || typeof parsed !== 'object') return response({ error: 'Invalid request body.' }, 400);
@@ -33,7 +37,7 @@ export async function POST(request: Request) {
 
   const { data: deposit, error: insertError } = await admin.from('deposits').insert({
     user_id: user.id, method: 'usdt_trc20', claimed_amount: claimed, txid,
-    to_address: address, status: 'pending_verification',
+    to_address: address, receiving_address: address, status: 'pending_verification',
   }).select('id').single();
   if (insertError || !deposit) {
     if (isDuplicateTxidError(insertError)) return response({ error: 'This transaction ID has already been submitted.' }, 409);
@@ -42,7 +46,7 @@ export async function POST(request: Request) {
   }
 
   try {
-    const result = await verifyTronUsdtTransfer(txid);
+    const result = await verifyTronUsdtTransfer(txid, address);
     if (result.state === 'verified') {
       const { error } = await admin.rpc('confirm_and_credit_deposit', {
         p_deposit_id: deposit.id,
