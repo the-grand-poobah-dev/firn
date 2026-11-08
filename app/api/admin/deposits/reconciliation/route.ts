@@ -124,7 +124,7 @@ async function readLedgerRows(admin: ReturnType<typeof createAdminClient>) {
   for (let offset = 0; offset < 10000; offset += pageSize) {
     const { data, error } = await admin.from('wallet_ledger')
       .select('id,deposit_id,amount,created_at,kind,method')
-      .not('deposit_id', 'is', null)
+      .or('method.eq.usdt_trc20,deposit_id.not.is.null')
       .order('created_at', { ascending: false }).range(offset, offset + pageSize - 1);
     if (error) throw new Error('Could not read USDT deposit ledger entries.');
     rows.push(...(data ?? []) as LedgerRow[]);
