@@ -4,6 +4,8 @@ vi.mock('server-only', () => ({}));
 import { decimalToUnits, isDuplicateTxidError, isValidTronAddress, verifyTronUsdtTransfer } from '../lib/deposits/tron';
 import { areUsdtDepositsEnabled, getActiveDepositAddress } from '../lib/deposits/config';
 
+const base58 = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
+
 function testAddress(fill: number): string {
   const payload = Buffer.concat([Buffer.from([0x41]), Buffer.alloc(20, fill)]);
   const first = createHash('sha256').update(payload).digest();
@@ -19,7 +21,6 @@ const recipient = testAddress(1);
 const olderRecipient = testAddress(2);
 const contract = 'TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t';
 const txid = 'a'.repeat(64);
-const base58 = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
 
 function b58decode(value: string): Buffer {
   let n=0n; for(const c of value)n=n*58n+BigInt(base58.indexOf(c));
