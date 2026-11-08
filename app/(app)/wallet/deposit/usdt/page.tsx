@@ -5,13 +5,14 @@ import { areUsdtDepositsEnabled, getActiveDepositAddress } from '@/lib/deposits/
 
 export const dynamic = 'force-dynamic';
 
-export default async function UsdtDepositStep({ searchParams }: { searchParams: { returnTo?: string } }) {
+export default async function UsdtDepositStep({ searchParams }: { searchParams: Promise<{ returnTo?: string }> }) {
+  const query = await searchParams;
   const { supabase, user } = await requireUser();
   const configuredAddress = getActiveDepositAddress();
   const address = areUsdtDepositsEnabled() ? configuredAddress : null;
   const configuredMinimum = Number(process.env.MIN_DEPOSIT_USDT ?? '10');
   const minimumDeposit = Number.isFinite(configuredMinimum) && configuredMinimum > 0 ? configuredMinimum : 10;
-  const returnTo = searchParams.returnTo?.startsWith('/save/') ? searchParams.returnTo : '/wallet/deposit';
+  const returnTo = query.returnTo?.startsWith('/save/') ? query.returnTo : '/wallet/deposit';
 
   const { data, error } = await supabase
     .from('deposits')
