@@ -5,11 +5,6 @@ begin;
 revoke all on function public.deposit_demo(numeric, text)
   from public, anon, authenticated, service_role;
 
--- This function is invoked by the auth.users trigger, not by application clients.
--- Remove unnecessary direct RPC execution while preserving trigger execution.
-revoke all on function public.handle_new_user()
-  from public, anon, authenticated;
-
 -- Remove Supabase's broad default table grants and expose only the operations
 -- required by the browser. RLS remains the row-level boundary.
 revoke all on table public.deposits, public.wallet_ledger, public.deposit_review_events
