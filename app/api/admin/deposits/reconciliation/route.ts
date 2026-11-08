@@ -194,8 +194,9 @@ export async function GET() {
     }
 
     const confirmedTotal = confirmedDeposits.rows.reduce((sum, row) => sum + safeUnits(row.verified_amount), 0n);
+    const allDepositTxids = new Set(allDepositRows.rows.map(row => row.txid.toLowerCase()));
     const unmatched = [...incomingByTxid.values()]
-      .filter(row => !allDepositTxids.txids.has(row.txid))
+      .filter(row => !allDepositTxids.has(row.txid))
       .map(row => ({
         txid: row.txid,
         amount: unitsToDecimal(row.amountUnits),
@@ -262,7 +263,8 @@ export async function GET() {
       difference: unitsToDecimal(chainTotal - confirmedTotal),
       chainTransferCount: incomingByTxid.size,
       confirmedDepositCount: confirmedDeposits.rows.length,
-      unmatchedTransfers: unmatched,\n      transferDiscrepancies,
+      unmatchedTransfers: unmatched,
+      transferDiscrepancies,
       unverifiableLedgerEntries: issues,
       ledgerRowsTotal: ledgerRows.length,
       ledgerRowsChecked: rowsToVerify.length,
