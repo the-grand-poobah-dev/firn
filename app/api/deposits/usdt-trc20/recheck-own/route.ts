@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { verifyTronUsdtTransfer } from '@/lib/deposits/tron';
+import { areUsdtDepositsEnabled } from '@/lib/deposits/config';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 30;
@@ -10,6 +11,7 @@ export async function POST(request: Request) {
   const session = await createClient();
   const { data: { user } } = await session.auth.getUser();
   if (!user) return json({ error: 'Authentication required.' }, 401);
+  if (!areUsdtDepositsEnabled()) return json({ error: 'USDT deposits are temporarily unavailable.' }, 503);
   let parsed: unknown;
   try { parsed = await request.json(); } catch { return json({ error: 'Invalid JSON.' }, 400); }
   if (!parsed || typeof parsed !== 'object') return json({ error: 'Invalid request body.' }, 400);
