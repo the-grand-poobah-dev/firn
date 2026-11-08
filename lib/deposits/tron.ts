@@ -6,6 +6,9 @@ const BASE58 = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
 const HEX64 = /^[a-fA-F0-9]{64}$/;
 const DEFAULT_CONTRACT = 'TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t';
 
+type TronLog = { address?: string; topics?: string[]; data?: string };
+type TronReceipt = { id?: string; receipt?: { result?: string }; result?: string; log?: TronLog[]; blockTimeStamp?: number | string; blockNumber?: number | string };
+
 export type TronVerification =
   | { state: 'not_found' | 'unconfirmed'; reason: string }
   | { state: 'rejected'; reason: string }
@@ -87,12 +90,14 @@ export async function verifyTronUsdtTransfer(txid: string): Promise<TronVerifica
         cache: 'no-store',
       });
       if (!response.ok) throw new Error(`TronGrid HTTP ${response.status}`);
-      return response.json() as Promise<Record<string, any>>;
+      return response.json() as Promise<Record<string, unknown>>;
     };
-    const [body, receipt] = await Promise.all([
+    const [bodyRaw, receiptRaw] = await Promise.all([
       post('/walletsolidity/gettransactionbyid'),
       post('/walletsolidity/gettransactioninfobyid'),
     ]);
+    const body = bodyRaw as { txID?: string };
+    const receipt = receiptRaw as TronReceipt;
     if (!body?.txID || String(body.txID).toLowerCase() !== txid.toLowerCase()) {
       return { state: 'not_found', reason: 'Transaction is not yet available in the solidified TRON chain.' };
     }
@@ -105,7 +110,7 @@ export async function verifyTronUsdtTransfer(txid: string): Promise<TronVerifica
       return { state: 'rejected', reason: 'The TRON transaction execution failed.' };
     }
     const logs = Array.isArray(receipt.log) ? receipt.log : [];
-    const transfers = logs.filter((log: any) =>
+    const transfers = logs.filter((log: TronLog) =>
       logAddressToHex(String(log.address ?? '')) === contractHex &&
       String(log.topics?.[0] ?? '').replace(/^0x/i, '').toLowerCase() === TRANSFER_TOPIC
     ).map((log: any) => {
