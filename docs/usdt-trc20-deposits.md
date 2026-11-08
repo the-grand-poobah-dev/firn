@@ -71,3 +71,14 @@ Vercel Hobby supports daily cron schedules only. The configured cron is daily at
 7. Only then request explicit approval to apply the migration to production and merge/deploy.
 
 **Do not accept real deposits until all pre-launch checks pass.**
+
+
+## Admin reconciliation report
+
+- Admin page: `/admin/deposits/reconciliation` (linked from `/admin/deposits`).
+- API: `GET /api/admin/deposits/reconciliation`; both the page and API enforce the server-side `profiles.is_admin` check.
+- Reads confirmed incoming USDT TRC20 history from TronGrid using `only_confirmed=true`, `only_to=true`, the active receiving address, and the official USDT contract. It follows TronGrid pagination fingerprints.
+- Compares the confirmed incoming total with `verified_amount` summed over confirmed Supabase deposits pinned to that same receiving address.
+- Lists incoming TXIDs with no deposit row, TXID-level chain/Supabase amount differences, and deposit ledger credits whose TXID or amounts fail a fresh on-chain verification against the pinned receiving address.
+- This endpoint is read-only: it uses Supabase SELECT queries and TronGrid read endpoints only. It does not call deposit credit, review, insert, update, or delete operations.
+- Safety caps are reported explicitly as an incomplete report rather than a clean reconciliation: up to 25 TronGrid pages (200 events per page), 50,000 deposit rows, 10,000 ledger rows, and 40 ledger TXIDs re-verified per run.
