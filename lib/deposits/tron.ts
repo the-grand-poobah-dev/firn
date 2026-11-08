@@ -113,7 +113,7 @@ export async function verifyTronUsdtTransfer(txid: string): Promise<TronVerifica
     const transfers = logs.filter((log: TronLog) =>
       logAddressToHex(String(log.address ?? '')) === contractHex &&
       String(log.topics?.[0] ?? '').replace(/^0x/i, '').toLowerCase() === TRANSFER_TOPIC
-    ).map((log: any) => {
+    ).map((log: TronLog) => {
       const fromAddress = addressFromTopic(String(log.topics?.[1] ?? ''));
       const toAddress = addressFromTopic(String(log.topics?.[2] ?? ''));
       const data = String(log.data ?? '').replace(/^0x/i, '');
