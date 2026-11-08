@@ -17,7 +17,7 @@ function log(contractAddress=contract, to=recipient, amount=25_000_000n) {
   const hex=b58decode(contractAddress).toString('hex');
   return { address:hex, topics:['ddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef',topic(recipient),topic(to)], data:amount.toString(16).padStart(64,'0') };
 }
-function mockChain(receipt: any, body: any={txID:txid}) {
+function mockChain(receipt: Record<string, unknown>, body: Record<string, unknown>={txID:txid}) {
   vi.stubGlobal('fetch', vi.fn(async (url: string) => ({ ok:true, json:async()=>url.endsWith('gettransactionbyid')?body:receipt })));
 }
 afterEach(()=>{ vi.unstubAllGlobals(); vi.unstubAllEnvs(); vi.restoreAllMocks(); });
