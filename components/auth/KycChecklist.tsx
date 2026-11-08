@@ -1,1 +1,25 @@
-'use client';import{useState,useTransition}from'react';import{useRouter}from'next/navigation';import{beginKycAction,finishKycAction}from'@/app/auth/actions';import{Button}from'@/components/ui/Button';const steps=['Email','Phone','ID document','Proof of address','Source of funds'];export function KycChecklist(){const[d,D]=useState(['Email']);const[b,B]=useState('');const[e,E]=useState('');const[t,T]=useTransition();const router=useRouter();async function photo(x:string){B(x);const r=await beginKycAction();if(r.error){E(r.error);B('');return}setTimeout(()=>{D(v=>v.includes(x)?v:[...v,x]);B('')},2000)}return <div className="space-y-3"><p className="mb-5 text-sm text-muted">Simulated checks only. No photos or documents are uploaded or stored.</p>{steps.map((x,i)=><div key={x} className="flex items-center gap-3 rounded-2xl border border-line bg-card2 p-4"><span className="grid size-8 place-items-center rounded-full bg-card text-sm">{d.includes(x)?'✓':i+1}</span><div className="flex-1"><p className="text-sm font-medium">{x}</p><p className="text-[10px] text-muted">{d.includes(x)?'Complete':'Simulated'}</p></div>{!d.includes(x)&&<Button variant="ghost" disabled={!!b} onClick={()=>x==='ID document'||x==='Proof of address'?photo(x):D(v=>[...v,x])}>{b===x?'Processing…':x==='ID document'||x==='Proof of address'?'Take photo':'Mark done'}</Button>}</div>)}{e&&<p role="alert" className="text-xs text-neg">{e}</p>}<Button className="mt-4 w-full" disabled={d.length!==5||t} onClick={()=>T(async()=>{const r=await finishKycAction();if(r.error)E(r.error);else router.push('/ready')})}>Complete verification</Button></div>}
+import Link from 'next/link';
+import { Card } from '@/components/ui/Card';
+
+const steps = ['Identity document', 'Proof of address', 'Source of funds'];
+
+export function KycChecklist() {
+  return (
+    <div className="space-y-4">
+      <Card className="space-y-2 border-warm/40">
+        <p className="text-sm font-semibold">Identity verification is not connected yet</p>
+        <p className="text-xs leading-5 text-muted">FIRN is not currently collecting identity documents. Your account remains unverified. Do not send identity documents by email or through an unapproved channel.</p>
+      </Card>
+      <div className="space-y-2">
+        {steps.map((step) => (
+          <div key={step} className="flex items-center justify-between rounded-2xl border border-line bg-card2 p-4">
+            <span className="text-sm font-medium">{step}</span>
+            <span className="rounded-full bg-card px-2 py-1 text-[10px] font-semibold text-muted">Not started</span>
+          </div>
+        ))}
+      </div>
+      <p className="text-xs leading-5 text-muted">You can continue browsing FIRN. Starting a savings plan or depositing funds remains restricted until identity verification is completed by an approved provider.</p>
+      <Link href="/home" className="flex min-h-12 items-center justify-center rounded-full bg-accent px-4 text-sm font-semibold text-accent-on">Continue to dashboard</Link>
+    </div>
+  );
+}
