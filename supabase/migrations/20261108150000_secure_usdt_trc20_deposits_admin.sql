@@ -94,7 +94,7 @@ set search_path = public, pg_temp
 as $$
 declare v_count integer;
 begin
-  if coalesce(current_setting('request.jwt.claim.role', true), '') <> 'service_role' then
+  if coalesce(auth.role(), '') <> 'service_role' then
     raise exception 'service role required';
   end if;
   perform pg_advisory_xact_lock(hashtextextended(p_user_id::text, 0));
@@ -139,6 +139,56 @@ end;
 $$;
 revoke all on function public.credit_deposit(uuid) from public, anon, authenticated;
 grant execute on function public.credit_deposit(uuid) to service_role;
+
+-- Review, audit, and (for approvals) credit are one atomic database transaction.
+create or replace function public.review_deposit(
+  p_deposit_id uuid,
+  p_actor_id uuid,
+  p_action text,
+  p_amount numeric default null,
+  p_reason text default null
+)
+returns uuid
+language plpgsql
+security definer
+set search_path = public, pg_temp
+as $
+declare v_deposit public.deposits%rowtype; v_ledger_id uuid;
+begin
+  if coalesce(auth.role(), '') <> 'service_role' then raise exception 'service role required'; end if;
+  if not exists (select 1 from public.profiles where id = p_actor_id and is_admin = true) then
+    raise exception 'administrator required';
+  end if;
+  select * into v_deposit from public.deposits where id = p_deposit_id for update;
+  if not found or v_deposit.status not in ('pending_verification','needs_review') then
+    raise exception 'Deposit is no longer awaiting review';
+  end if;
+  if p_action = 'approved' then
+    if p_amount is null or p_amount <= 0 then raise exception 'A positive approved amount is required'; end if;
+    update public.deposits set status='confirmed', verified_amount=p_amount,
+      reviewed_by=p_actor_id, reviewed_at=now(), failure_reason=null, updated_at=now()
+      where id=p_deposit_id;
+    insert into public.deposit_review_events(deposit_id,actor_id,action,approved_amount)
+      values(p_deposit_id,p_actor_id,'approved',p_amount);
+    v_ledger_id := public.credit_deposit(p_deposit_id);
+    return v_ledger_id;
+  elsif p_action = 'rejected' then
+    if p_reason is null or length(trim(p_reason)) < 5 or length(p_reason) > 500 then
+      raise exception 'A rejection reason between 5 and 500 characters is required';
+    end if;
+    update public.deposits set status='rejected', rejection_reason=trim(p_reason),
+      failure_reason=trim(p_reason), reviewed_by=p_actor_id, reviewed_at=now(), updated_at=now()
+      where id=p_deposit_id;
+    insert into public.deposit_review_events(deposit_id,actor_id,action,reason)
+      values(p_deposit_id,p_actor_id,'rejected',trim(p_reason));
+    return null;
+  else
+    raise exception 'Unsupported review action';
+  end if;
+end;
+$;
+revoke all on function public.review_deposit(uuid,uuid,text,numeric,text) from public, anon, authenticated;
+grant execute on function public.review_deposit(uuid,uuid,text,numeric,text) to service_role;
 
 -- Profile trigger is a second line of defence against self-promotion, including broad future grants.
 create or replace function public.prevent_profile_admin_escalation()
