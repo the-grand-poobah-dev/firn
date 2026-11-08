@@ -260,7 +260,7 @@ export async function GET(request: Request) {
       if (ledgerRow.kind !== 'deposit' || ledgerRow.method !== 'usdt_trc20') return { ...base, reason: 'Ledger row kind or method does not match a USDT TRC20 deposit credit.' };
       if (deposit.status !== 'confirmed' || !deposit.receiving_address) return { ...base, reason: 'Deposit row is not confirmed or has no pinned receiving address.' };
       try {
-        const result = await verifyTronUsdtTransfer(deposit.txid, deposit.receiving_address);
+        const result = await verifyTronUsdtTransfer(deposit.txid, deposit.receiving_address, { enforceMinimum: false });
         if (result.state !== 'verified') return { ...base, reason: result.reason };
         const ledgerUnits = safeUnits(ledgerRow.amount);
         const verifiedUnits = safeUnits(deposit.verified_amount);
