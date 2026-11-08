@@ -3,11 +3,13 @@ import { TopBar } from '@/components/app/TopBar';
 import { Card } from '@/components/ui/Card';
 import { Icon } from '@/components/ui/Icon';
 import { PaymentMethodSelector } from '@/components/wallet/PaymentMethodSelector';
+import { areUsdtDepositsEnabled, getActiveDepositAddress } from '@/lib/deposits/config';
 
 export const dynamic = 'force-dynamic';
 
 export default function DepositPage({ searchParams }: { searchParams: { returnTo?: string; method?: string } }) {
   const returnTo = searchParams.returnTo?.startsWith('/save/') ? searchParams.returnTo : '/wallet';
+  const usdtEnabled = areUsdtDepositsEnabled() && Boolean(getActiveDepositAddress());
 
   return (
     <div className="space-y-5">
@@ -15,10 +17,10 @@ export default function DepositPage({ searchParams }: { searchParams: { returnTo
       <header>
         <p className="label">FUND YOUR FIRN WALLET</p>
         <h1 className="mt-2 text-2xl font-semibold">Choose a top-up method</h1>
-        <p className="mt-2 text-sm text-muted">USDT on Tron is currently available. Other payment methods will be enabled as their integrations launch.</p>
+        <p className="mt-2 text-sm text-muted">{usdtEnabled ? 'USDT on Tron is available.' : 'Deposits are temporarily unavailable.'} Other payment methods will be enabled as their integrations launch.</p>
       </header>
 
-      <PaymentMethodSelector selectedId={searchParams.method} returnTo={returnTo} />
+      <PaymentMethodSelector selectedId={searchParams.method} returnTo={returnTo} usdtEnabled={usdtEnabled} />
 
       <Card className="border-warm/40">
         <div className="flex gap-2">
