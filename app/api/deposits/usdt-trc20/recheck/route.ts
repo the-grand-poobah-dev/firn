@@ -28,9 +28,9 @@ export async function POST(request: Request) {
         });
         if (creditError) console.error('Deposit credit retry failed:', creditError.code);
       } else if (result.state === 'rejected') {
-        await admin.from('deposits').update({ status: 'rejected', failure_reason: result.reason, updated_at: new Date().toISOString() }).eq('id', row.id);
+        await admin.from('deposits').update({ status: 'rejected', failure_reason: result.reason, updated_at: new Date().toISOString() }).eq('id', row.id).in('status', ['pending_verification', 'needs_review']);
       } else {
-        await admin.from('deposits').update({ failure_reason: result.reason, updated_at: new Date().toISOString() }).eq('id', row.id);
+        await admin.from('deposits').update({ failure_reason: result.reason, updated_at: new Date().toISOString() }).eq('id', row.id).in('status', ['pending_verification', 'needs_review']);
       }
     } catch { console.error('Scheduled deposit recheck failed; row retained for retry.'); }
     checked++;
