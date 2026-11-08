@@ -12,10 +12,12 @@ export async function POST(request: Request) {
   const session = await createClient();
   const { data: { user } } = await session.auth.getUser();
   if (!user) return response({ error: 'Authentication required.' }, 401);
-  let body: any;
-  try { body = await request.json(); } catch { return response({ error: 'Invalid JSON.' }, 400); }
-  const txid = typeof body?.txid === 'string' ? body.txid.trim().toLowerCase() : '';
-  const claimed = typeof body?.claimedAmount === 'string' ? body.claimedAmount.trim() : '';
+  let parsed: unknown;
+  try { parsed = await request.json(); } catch { return response({ error: 'Invalid JSON.' }, 400); }
+  if (!parsed || typeof parsed !== 'object') return response({ error: 'Invalid request body.' }, 400);
+  const body = parsed as { txid?: unknown; claimedAmount?: unknown };
+  const txid = typeof body.txid === 'string' ? body.txid.trim().toLowerCase() : '';
+  const claimed = typeof body.claimedAmount === 'string' ? body.claimedAmount.trim() : '';
   if (!TXID.test(txid) || !AMOUNT.test(claimed) || Number(claimed) <= 0) return response({ error: 'Provide a valid transaction ID and claimed amount.' }, 400);
 
   const admin = createAdminClient();
