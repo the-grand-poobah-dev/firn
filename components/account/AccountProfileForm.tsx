@@ -1,19 +1,113 @@
 'use client';
-import {useRef,useState,useTransition} from 'react';
+
+import { useRef, useState, useTransition } from 'react';
 import Image from 'next/image';
-import {useRouter} from 'next/navigation';
-import {saveAccountProfileAction} from '@/app/auth/actions';
-import {Button} from '@/components/ui/Button';
-export function AccountProfileForm({initialName,email,initialAvatarUrl,kycStatus}:{initialName:string;email:string;initialAvatarUrl:string|null;kycStatus:string}){
- const [name,setName]=useState(initialName);const [error,setError]=useState('');const [saved,setSaved]=useState(false);const [pending,start]=useTransition();const [avatarUrl,setAvatarUrl]=useState(initialAvatarUrl);const [photoError,setPhotoError]=useState('');const [uploading,setUploading]=useState(false);const fileRef=useRef<HTMLInputElement>(null);const router=useRouter();
- async function uploadPhoto(file?:File){if(!file)return;setPhotoError('');if(file.size>10*1024*1024){setPhotoError('Choose an image up to 10 MB.');return;}const form=new FormData();form.set('file',file);setUploading(true);try{const response=await fetch('/api/profile/avatar',{method:'POST',body:form});const payload=await response.json();if(!response.ok)throw new Error(payload.error||'Could not upload your photo.');setAvatarUrl(payload.avatarUrl);router.refresh();}catch(e){setPhotoError(e instanceof Error?e.message:'Could not upload your photo.');}finally{setUploading(false);if(fileRef.current)fileRef.current.value='';}}
- return <form className="space-y-5" onSubmit={e=>{e.preventDefault();setError('');setSaved(false);start(async()=>{const r=await saveAccountProfileAction({fullName:name});if(r.error)setError(r.error);else{setSaved(true);router.refresh();}})}}>
-  <div className="relative flex items-center gap-4 rounded-2xl bg-card2 p-4"><div className="relative"><div className="relative grid size-20 shrink-0 place-items-center overflow-hidden rounded-full bg-accent text-xl font-semibold text-accent-on">{avatarUrl?<Image src={avatarUrl} alt="Your profile picture" fill sizes="80px" unoptimized className="object-cover"/>:(name.trim().charAt(0).toUpperCase()||'F')}</div><span aria-label={kycStatus==='verified'?'Identity verified':'Identity not verified'} title={kycStatus==='verified'?'Verified':'Not verified'} className={`absolute bottom-0 right-0 size-4 rounded-full border-[3px] border-card2 ${kycStatus==='verified'?'bg-emerald-500':'bg-red-500'}`} /></div><div className="min-w-0"><p className="text-sm font-semibold">Profile picture</p><p className="mt-1 text-xs text-muted">JPG, PNG, WebP or AVIF · up to 10 MB</p><input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp,image/avif" className="sr-only" onChange={e=>void uploadPhoto(e.target.files?.[0])}/><Button type="button" variant="ghost" className="mt-2" disabled={uploading} onClick={()=>fileRef.current?.click()}>{uploading?'Uploading…':avatarUrl?'Change photo':'Add photo'}</Button></div></div>
-  {photoError&&<p role="alert" className="text-xs text-neg">{photoError}</p>}
-  <label className="block"><span className="mb-2 block text-xs font-medium text-muted">Full name</span><input value={name} onChange={e=>setName(e.target.value)} autoComplete="name" maxLength={80} required className="h-12 w-full rounded-xl border border-line bg-card2 px-4 text-sm outline-none focus:border-accent"/></label>
-  <label className="block"><span className="mb-2 block text-xs font-medium text-muted">Sign-in email</span><input value={email} readOnly className="h-12 w-full rounded-xl border border-line bg-card2 px-4 text-sm text-muted"/></label>
-  <p className="text-[11px] leading-5 text-muted">Your email is used to sign in. Contact support if you need to change it.</p>
-  {error&&<p role="alert" className="text-xs text-neg">{error}</p>}{saved&&<p role="status" className="text-xs text-pos">Profile updated.</p>}
-  <Button className="w-full" disabled={pending}>{pending?'Saving…':'Save changes'}</Button>
- </form>;
+import { useRouter } from 'next/navigation';
+import { saveAccountProfileAction } from '@/app/auth/actions';
+import { Button } from '@/components/ui/Button';
+
+async function prepareAvatar(file: File): Promise<File> {
+  const MAX_UPLOAD = 3.8 * 1024 * 1024;
+  if (file.size <= MAX_UPLOAD) return file;
+  if (typeof createImageBitmap !== 'function') throw new Error('This image is too large. Choose an image under 4 MB.');
+
+  const bitmap = await createImageBitmap(file);
+  try {
+    const scale = Math.min(1, 1600 / Math.max(bitmap.width, bitmap.height));
+    const canvas = document.createElement('canvas');
+    canvas.width = Math.max(1, Math.round(bitmap.width * scale));
+    canvas.height = Math.max(1, Math.round(bitmap.height * scale));
+    const context = canvas.getContext('2d');
+    if (!context) throw new Error('Your browser could not prepare this image.');
+    context.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+
+    for (const quality of [0.86, 0.76, 0.66, 0.56]) {
+      const blob = await new Promise<Blob | null>(resolve => canvas.toBlob(resolve, 'image/jpeg', quality));
+      if (blob && blob.size <= MAX_UPLOAD) return new File([blob], 'profile-photo.jpg', { type: 'image/jpeg', lastModified: Date.now() });
+    }
+    throw new Error('This image is still too large after resizing. Choose a smaller image.');
+  } finally {
+    bitmap.close();
+  }
+}
+
+export function AccountProfileForm({ initialName, email, initialAvatarUrl, kycStatus }: { initialName: string; email: string; initialAvatarUrl: string | null; kycStatus: string }) {
+  const [name, setName] = useState(initialName);
+  const [error, setError] = useState('');
+  const [saved, setSaved] = useState(false);
+  const [pending, start] = useTransition();
+  const [avatarUrl, setAvatarUrl] = useState(initialAvatarUrl);
+  const [photoError, setPhotoError] = useState('');
+  const [uploading, setUploading] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
+  const router = useRouter();
+
+  async function uploadPhoto(file?: File) {
+    if (!file) return;
+    setPhotoError('');
+    if (file.size <= 0 || file.size > 10 * 1024 * 1024) {
+      setPhotoError('Choose an image up to 10 MB.');
+      return;
+    }
+    setUploading(true);
+    try {
+      const prepared = await prepareAvatar(file);
+      const form = new FormData();
+      form.set('file', prepared);
+      const response = await fetch('/api/profile/avatar', { method: 'POST', body: form });
+      const raw = await response.text();
+      let payload: { avatarUrl?: string; error?: string } = {};
+      try { payload = JSON.parse(raw) as typeof payload; } catch {
+        throw new Error(response.status === 413 ? 'This image is too large to upload. Choose a smaller image.' : 'The upload service returned an invalid response. Please try again.');
+      }
+      if (!response.ok) throw new Error(payload.error || 'Could not upload your photo.');
+      if (!payload.avatarUrl) throw new Error('The upload completed without returning a profile image.');
+      setAvatarUrl(payload.avatarUrl);
+      router.refresh();
+    } catch (e) {
+      setPhotoError(e instanceof Error ? e.message : 'Could not upload your photo.');
+    } finally {
+      setUploading(false);
+      if (fileRef.current) fileRef.current.value = '';
+    }
+  }
+
+  return (
+    <form className="space-y-5" onSubmit={e => {
+      e.preventDefault(); setError(''); setSaved(false);
+      start(async () => {
+        const result = await saveAccountProfileAction({ fullName: name });
+        if (result.error) setError(result.error);
+        else { setSaved(true); router.refresh(); }
+      });
+    }}>
+      <div className="relative flex items-center gap-4 rounded-2xl bg-card2 p-4">
+        <div className="relative">
+          <div className="relative grid size-20 shrink-0 place-items-center overflow-hidden rounded-full bg-accent text-xl font-semibold text-accent-on">
+            {avatarUrl ? <Image src={avatarUrl} alt="Your profile picture" fill sizes="80px" unoptimized className="object-cover" /> : (name.trim().charAt(0).toUpperCase() || 'F')}
+          </div>
+          <span aria-label={kycStatus === 'verified' ? 'Identity verified' : 'Identity not verified'} title={kycStatus === 'verified' ? 'Verified' : 'Not verified'} className={`absolute bottom-0 right-0 size-4 rounded-full border-[3px] border-card2 ${kycStatus === 'verified' ? 'bg-emerald-500' : 'bg-red-500'}`} />
+        </div>
+        <div className="min-w-0">
+          <p className="text-sm font-semibold">Profile picture</p>
+          <p className="mt-1 text-xs text-muted">JPG, PNG, WebP or AVIF · up to 10 MB</p>
+          <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp,image/avif" className="sr-only" onChange={e => void uploadPhoto(e.target.files?.[0])} />
+          <Button type="button" variant="ghost" className="mt-2" disabled={uploading} onClick={() => fileRef.current?.click()}>{uploading ? 'Uploading…' : avatarUrl ? 'Change photo' : 'Add photo'}</Button>
+        </div>
+      </div>
+      {photoError && <p role="alert" className="text-xs text-neg">{photoError}</p>}
+      <label className="block">
+        <span className="mb-2 block text-xs font-medium text-muted">Full name</span>
+        <input value={name} onChange={e => setName(e.target.value)} autoComplete="name" maxLength={80} required className="h-12 w-full rounded-xl border border-line bg-card2 px-4 text-sm outline-none focus:border-accent" />
+      </label>
+      <label className="block">
+        <span className="mb-2 block text-xs font-medium text-muted">Sign-in email</span>
+        <input value={email} readOnly className="h-12 w-full rounded-xl border border-line bg-card2 px-4 text-sm text-muted" />
+      </label>
+      <p className="text-[11px] leading-5 text-muted">Your email is used to sign in. Contact support if you need to change it.</p>
+      {error && <p role="alert" className="text-xs text-neg">{error}</p>}
+      {saved && <p role="status" className="text-xs text-pos">Profile updated.</p>}
+      <Button className="w-full" disabled={pending}>{pending ? 'Saving…' : 'Save changes'}</Button>
+    </form>
+  );
 }
