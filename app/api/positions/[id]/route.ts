@@ -1,0 +1,9 @@
+import {NextResponse} from 'next/server';
+import {getSavingsPosition} from '@/lib/savings';
+import {createClient} from '@/lib/supabase/server';
+import {revalidatePath} from 'next/cache';
+import {parseAutoRollPatch} from '@/lib/savings-validation';
+export const dynamic='force-dynamic';
+type Context={params:Promise<{id:string}>};
+export async function GET(_request:Request,{params}:Context){const {id}=await params;try{const row=await getSavingsPosition(id);if(!row)return NextResponse.json({error:'Savings position not found.'},{status:404});return NextResponse.json(row);}catch(error){return NextResponse.json({error:error instanceof Error?error.message:'Unable to load savings.'},{status:500});}}
+export async function PATCH(request:Request,{params}:Context){const {id}=await params;try{const body=await request.json();const supabase=await createClient();const {data:{user},error:authError}=await supabase.auth.getUser();if(authError||!user)return NextResponse.json({error:'Please sign in.'},{status:401});const {data:position}=await supabase.from('positions').select('plan').eq('id',id).eq('user_id',user.id).maybeSingle();if(!position)return NextResponse.json({error:'Savings position not found.'},{status:404});const patch=parseAutoRollPatch(body,position.plan);if(!patch)return NextResponse.json({error:'Choose a valid maturity instruction. Only Firn Six can switch to Firn Twelve.'},{status:400});const {data,error}=await supabase.from('positions').update(patch).eq('id',id).eq('user_id',user.id).eq('status','active').select('id,auto_roll').maybeSingle();if(error)throw error;if(!data)return NextResponse.json({error:'Active savings position not found.'},{status:404});revalidatePath('/savings');revalidatePath('/savings/'+id);return NextResponse.json(data);}catch(error){return NextResponse.json({error:error instanceof Error?error.message:'Unable to update maturity choice.'},{status:400});}}

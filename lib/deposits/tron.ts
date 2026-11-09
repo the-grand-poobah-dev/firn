@@ -47,6 +47,16 @@ function base58Decode(value: string): Buffer {
   if (!checksum(payload).equals(body.subarray(-4))) throw new Error('Invalid base58 checksum');
   return payload;
 }
+export function isValidTronAddress(address: string): boolean {
+  if (!/^T[1-9A-HJ-NP-Za-km-z]{33}$/.test(address)) return false;
+  try {
+    const payload = base58Decode(address);
+    return payload.length === 21 && payload[0] === 0x41;
+  } catch {
+    return false;
+  }
+}
+
 function base58Encode(payload: Buffer): string {
   const bytes = Buffer.concat([payload, checksum(payload)]);
   let n = BigInt('0x' + bytes.toString('hex'));
@@ -68,13 +78,25 @@ function logAddressToHex(address: string): string {
   return clean.length === 40 ? '41' + clean : clean;
 }
 
-export async function verifyTronUsdtTransfer(txid: string): Promise<TronVerification> {
+export async function verifyTronUsdtTransfer(txid: string, expectedRecipient: string, options: { enforceMinimum?: boolean } = {}): Promise<TronVerification> {
   if (!HEX64.test(txid)) return { state: 'rejected', reason: 'Invalid transaction ID format.' };
   const apiKey = process.env.TRONGRID_API_KEY;
-  const recipient = process.env.DEPOSIT_USDT_TRC20_ADDRESS?.trim() ?? '';
+  const acceptedAddresses = [...new Set((process.env.ACCEPTED_DEPOSIT_ADDRESSES ?? '')
+    .split(',').map((address) => address.trim()).filter(Boolean))];
   const contract = process.env.USDT_TRC20_CONTRACT?.trim() || DEFAULT_CONTRACT;
-  if (!apiKey || !recipient || !contract) throw new Error('TRON verification is not configured');
-  const recipientHex = addressToHex(recipient);
+  if (!apiKey || !expectedRecipient || !contract) {
+    throw new Error('TRON verification is not configured');
+  }
+  // Never permit an operator typo or override to silently switch the accepted asset.
+  if (contract !== DEFAULT_CONTRACT) throw new Error('Configured USDT contract does not match the official TRON USDT contract');
+  if (!isValidTronAddress(expectedRecipient) ||
+      (acceptedAddresses.length > 0 && (
+        !acceptedAddresses.every(isValidTronAddress) ||
+        !acceptedAddresses.includes(expectedRecipient)
+      ))) {
+    throw new Error('Deposit recipient is invalid or not in the configured address allowlist');
+  }
+  const recipientHex = addressToHex(expectedRecipient);
   const contractHex = addressToHex(contract);
   if (!/^41[0-9a-f]{40}$/.test(recipientHex) || !/^41[0-9a-f]{40}$/.test(contractHex)) throw new Error('Invalid configured TRON address');
 
@@ -124,8 +146,10 @@ export async function verifyTronUsdtTransfer(txid: string): Promise<TronVerifica
     const toWallet = transfers.filter(t => addressToHex(t.toAddress) === recipientHex);
     if (!toWallet.length) return { state: 'rejected', reason: 'The USDT transfer was not sent to the configured FIRN receiving address.' };
     const total = toWallet.reduce((sum, transfer) => sum + transfer.units, 0n);
-    const minimum = decimalToUnits(process.env.MIN_DEPOSIT_USDT ?? '10');
-    if (total < minimum) return { state: 'rejected', reason: 'The verified USDT transfer is below the minimum deposit.' };
+    if (options.enforceMinimum !== false) {
+      const minimum = decimalToUnits(process.env.MIN_DEPOSIT_USDT ?? '10');
+      if (total < minimum) return { state: 'rejected', reason: 'The verified USDT transfer is below the minimum deposit.' };
+    }
     const timestamp = Number(receipt.blockTimeStamp);
     const blockNumber = Number(receipt.blockNumber);
     if (!Number.isFinite(timestamp) || timestamp <= 0 || !Number.isSafeInteger(blockNumber) || blockNumber <= 0) {
@@ -135,7 +159,7 @@ export async function verifyTronUsdtTransfer(txid: string): Promise<TronVerifica
       state: 'verified',
       amount: unitsToDecimal(total),
       fromAddress: toWallet[0].fromAddress,
-      toAddress: recipient,
+      toAddress: toWallet[0].toAddress,
       blockTimestamp: new Date(timestamp).toISOString(),
       blockNumber,
     };

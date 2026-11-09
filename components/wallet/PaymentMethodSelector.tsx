@@ -63,8 +63,10 @@ export function PaymentMethodSelector({ selectedId, returnTo = '/wallet', onSele
                   <span className="inline-flex items-center rounded-full bg-pos/15 px-2 py-1 text-[10px] font-semibold text-pos">
                     Available
                   </span>
-                ) : (
+                ) : method.status === 'coming_soon' ? (
                   <ComingSoonBadge />
+                ) : (
+                  <span className="inline-flex items-center rounded-full bg-warm/10 px-2 py-1 text-[10px] font-semibold text-warm">Temporarily unavailable</span>
                 )}
               </span>
               <span className="mt-1 block text-xs text-muted">{method.description}</span>

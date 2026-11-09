@@ -1,0 +1,1 @@
+import { RiskTool } from '@/components/tools/RiskTool';export default function Page(){return <div className="space-y-4"><div><p className="text-sm text-muted">Tools / Risk</p><h1 className="text-2xl font-semibold">Risk simulator</h1></div><RiskTool/></div>}

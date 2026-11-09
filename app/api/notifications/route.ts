@@ -5,8 +5,11 @@ export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 const headers = { 'Cache-Control': 'private, no-store, max-age=0', Vary: 'Cookie' };
 
-function categoryFor(title: string, body: string | null): 'earnings' | 'properties' | 'account' {
+function categoryFor(title: string, body: string | null): 'earnings' | 'properties' | 'deposits' | 'withdrawals' | 'admin' | 'account' {
   const text = (title + ' ' + (body ?? '')).toLowerCase();
+  if (/admin:|administrator|admin review/.test(text)) return 'admin';
+  if (/deposit|usdt|trc20/.test(text)) return 'deposits';
+  if (/withdrawal|withdraw/.test(text)) return 'withdrawals';
   if (/profit|earning|interest|accru|return|credited|matur/.test(text)) return 'earnings';
   if (/property|tenant|occupan|rent|valuation|asset|building/.test(text)) return 'properties';
   return 'account';

@@ -1,0 +1,1 @@
+/** Illustrative comparison rates; edit these values when refreshing benchmark assumptions. */export const ANALYTICS_BENCHMARKS=[{name:'Firn Twelve',rate:.13},{name:'Listed REIT index',rate:.065},{name:'Government bonds',rate:.042},{name:'High-yield savings',rate:.038}] as const;

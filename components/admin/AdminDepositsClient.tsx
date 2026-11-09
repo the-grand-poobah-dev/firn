@@ -38,7 +38,7 @@ export function AdminDepositsClient() {
       <div><p className="text-xs text-muted">TXID</p><code className="break-all text-xs">{row.txid}</code><a className="mt-1 inline-block text-xs text-accent underline" href={`https://tronscan.org/#/transaction/${row.txid}`} target="_blank" rel="noreferrer">Verify transaction on TronScan</a></div>
       <p className="text-xs text-muted">Failure reason: {row.failure_reason ?? 'None recorded'}</p>
       <label className="block text-xs font-semibold">Amount to approve (USDT)
-        <input value={amounts[row.id] ?? ''} onChange={e=>setAmounts(v=>({...v,[row.id]:e.target.value}))} inputMode="decimal" className="mt-1 min-h-11 w-full rounded-xl border border-line bg-card2 px-3 text-sm" placeholder="e.g. 25.000000" />
+        <input value={amounts[row.id] ?? ''} onChange={e=>setAmounts(v=>({...v,[row.id]:e.target.value}))} type="number" min="500" step="0.000001" inputMode="decimal" className="mt-1 min-h-11 w-full rounded-xl border border-line bg-card2 px-3 text-sm" placeholder="500.000000 or more" />
       </label>
       <Button className="w-full" disabled={busy===row.id || !amounts[row.id]} onClick={()=>void act(row.id,'approve')}>{busy===row.id?'Processing…':'Approve and credit'}</Button>
       <label className="block text-xs font-semibold">Rejection reason

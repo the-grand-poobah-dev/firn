@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { Icon } from '@/components/ui/Icon';
+import { usdtToKes, usdtToUsd } from '@/lib/fx';
 
 const QRCodeSVG = dynamic(() => import('qrcode.react').then((module) => module.QRCodeSVG), { ssr: false });
 
@@ -207,6 +208,7 @@ export function UsdtDepositClient({ address, minimumDeposit, initialDeposits, in
           <input id="deposit-txid" value={txid} onChange={(event) => setTxid(event.target.value)} placeholder="64-character transaction hash" autoComplete="off" spellCheck={false} required pattern="[a-fA-F0-9]{64}" title="Enter exactly 64 hexadecimal characters." className="min-h-12 w-full rounded-xl border border-line bg-card2 px-3 text-sm text-fg outline-none focus-visible:ring-2 focus-visible:ring-accent"/>
           <label className="block text-xs font-semibold" htmlFor="deposit-amount">Amount sent (USDT)</label>
           <input id="deposit-amount" type="number" min={minimumDeposit} step="0.000001" inputMode="decimal" value={amount} onChange={(event) => setAmount(event.target.value)} placeholder={String(minimumDeposit)} required className="min-h-12 w-full rounded-xl border border-line bg-card2 px-3 text-sm text-fg outline-none focus-visible:ring-2 focus-visible:ring-accent"/>
+          <p className="-mt-1 text-xs text-muted">1 USDT = 1 USD. {amount ? "Equivalent: $" + usdtToUsd(Number(amount)).toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2}) + " · KSh " + usdtToKes(Number(amount)).toLocaleString("en-KE",{maximumFractionDigits:0}) : "KES equivalent at the fixed rate: KSh " + usdtToKes(minimumDeposit).toLocaleString("en-KE")}</p>
           <Button type="submit" className="w-full" disabled={!address || submitting}>{submitting ? 'Submitting…' : 'Submit transaction for verification'} <Icon name="arrow" size={16}/></Button>
           {formMessage && <p role="status" aria-live="polite" className="rounded-xl bg-card2 p-3 text-xs leading-5 text-muted">{formMessage}</p>}
         </form>

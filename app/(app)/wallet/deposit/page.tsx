@@ -8,8 +8,9 @@ export const dynamic = 'force-dynamic';
 
 const TRON_ADDRESS_PATTERN = /^T[1-9A-HJ-NP-Za-km-z]{33}$/;
 
-export default function DepositPage({ searchParams }: { searchParams: { returnTo?: string; method?: string } }) {
-  const returnTo = searchParams.returnTo?.startsWith('/save/') ? searchParams.returnTo : '/wallet';
+export default async function DepositPage({ searchParams }: { searchParams: Promise<{ returnTo?: string; method?: string }> }) {
+  const params = await searchParams;
+  const returnTo = params.returnTo?.startsWith('/save/') ? params.returnTo : '/wallet';
   const configuredAddress = process.env.DEPOSIT_USDT_TRC20_ADDRESS?.trim() ?? '';
   // Enable the setup screen when a valid receiving wallet exists. All claims remain manual-review only.
   const usdtEnabled = TRON_ADDRESS_PATTERN.test(configuredAddress);
@@ -23,7 +24,7 @@ export default function DepositPage({ searchParams }: { searchParams: { returnTo
         <p className="mt-2 text-sm text-muted">USDT on Tron is the supported crypto deposit method. Other payment methods will be enabled as their integrations launch.</p>
       </header>
 
-      <PaymentMethodSelector selectedId={searchParams.method} returnTo={returnTo} usdtEnabled={usdtEnabled} />
+      <PaymentMethodSelector selectedId={params.method} returnTo={returnTo} usdtEnabled={usdtEnabled} />
 
       {!usdtEnabled && <Card className="border-warm/40">
         <div className="flex gap-2">

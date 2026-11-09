@@ -1,0 +1,1 @@
+import { StressTool } from '@/components/tools/StressTool';export default function Page(){return <div className="space-y-4"><div><p className="text-sm text-muted">Tools / Stress test</p><h1 className="text-2xl font-semibold">Vacancy stress test</h1></div><StressTool/></div>}

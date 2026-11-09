@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { isDuplicateTxidError } from '@/lib/deposits/tron';
+import { MIN_USDT_DEPOSIT } from '@/lib/fx';
 
 export const dynamic = 'force-dynamic';
 const TXID = /^[a-fA-F0-9]{64}$/;
@@ -23,8 +24,9 @@ export async function POST(request: Request) {
   const txid = typeof body.txid === 'string' ? body.txid.trim().toLowerCase() : '';
   const claimed = typeof body.claimedAmount === 'string' ? body.claimedAmount.trim() : '';
   const amount = Number(claimed);
-  const configuredMinimum = Number(process.env.MIN_DEPOSIT_USDT ?? '10');
-  const minimum = Number.isFinite(configuredMinimum) && configuredMinimum > 0 ? configuredMinimum : 10;
+  const configuredMinimum = Number(process.env.MIN_DEPOSIT_USDT ?? '500');
+  // Enforce the business minimum server-side even if a deployment variable is mis-set.
+  const minimum = Math.max(MIN_USDT_DEPOSIT, Number.isFinite(configuredMinimum) && configuredMinimum > 0 ? configuredMinimum : MIN_USDT_DEPOSIT);
   if (!TXID.test(txid) || !AMOUNT.test(claimed) || !Number.isFinite(amount) || amount < minimum) {
     return response({ error: `Provide a valid transaction ID and an amount of at least ${minimum} USDT.` }, 400);
   }
@@ -43,7 +45,7 @@ export async function POST(request: Request) {
   const { error: insertError } = await admin.from('deposits').insert({
     user_id: user.id,
     method: 'usdt_trc20',
-    claimed_amount: claimed,
+    claimed_amount: amount,
     txid,
     to_address: address,
     status: 'pending_verification',

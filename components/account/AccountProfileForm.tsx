@@ -1,0 +1,19 @@
+'use client';
+import {useRef,useState,useTransition} from 'react';
+import Image from 'next/image';
+import {useRouter} from 'next/navigation';
+import {saveAccountProfileAction} from '@/app/auth/actions';
+import {Button} from '@/components/ui/Button';
+export function AccountProfileForm({initialName,email,initialAvatarUrl}:{initialName:string;email:string;initialAvatarUrl:string|null}){
+ const [name,setName]=useState(initialName);const [error,setError]=useState('');const [saved,setSaved]=useState(false);const [pending,start]=useTransition();const [avatarUrl,setAvatarUrl]=useState(initialAvatarUrl);const [photoError,setPhotoError]=useState('');const [uploading,setUploading]=useState(false);const fileRef=useRef<HTMLInputElement>(null);const router=useRouter();
+ async function uploadPhoto(file?:File){if(!file)return;setPhotoError('');if(file.size>3*1024*1024){setPhotoError('Choose an image up to 3 MB.');return;}const form=new FormData();form.set('file',file);setUploading(true);try{const response=await fetch('/api/profile/avatar',{method:'POST',body:form});const payload=await response.json();if(!response.ok)throw new Error(payload.error||'Could not upload your photo.');setAvatarUrl(payload.avatarUrl);router.refresh();}catch(e){setPhotoError(e instanceof Error?e.message:'Could not upload your photo.');}finally{setUploading(false);if(fileRef.current)fileRef.current.value='';}}
+ return <form className="space-y-5" onSubmit={e=>{e.preventDefault();setError('');setSaved(false);start(async()=>{const r=await saveAccountProfileAction({fullName:name});if(r.error)setError(r.error);else{setSaved(true);router.refresh();}})}}>
+  <div className="flex items-center gap-4 rounded-2xl bg-card2 p-4"><div className="relative grid size-20 shrink-0 place-items-center overflow-hidden rounded-full bg-accent text-xl font-semibold text-accent-on">{avatarUrl?<Image src={avatarUrl} alt="Your profile picture" fill sizes="80px" unoptimized className="object-cover"/>:(name.trim().charAt(0).toUpperCase()||'F')}</div><div className="min-w-0"><p className="text-sm font-semibold">Profile picture</p><p className="mt-1 text-xs text-muted">JPG, PNG, WebP or AVIF · up to 3 MB</p><input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp,image/avif" className="sr-only" onChange={e=>void uploadPhoto(e.target.files?.[0])}/><Button type="button" variant="ghost" className="mt-2" disabled={uploading} onClick={()=>fileRef.current?.click()}>{uploading?'Uploading…':avatarUrl?'Change photo':'Add photo'}</Button></div></div>
+  {photoError&&<p role="alert" className="text-xs text-neg">{photoError}</p>}
+  <label className="block"><span className="mb-2 block text-xs font-medium text-muted">Full name</span><input value={name} onChange={e=>setName(e.target.value)} autoComplete="name" maxLength={80} required className="h-12 w-full rounded-xl border border-line bg-card2 px-4 text-sm outline-none focus:border-accent"/></label>
+  <label className="block"><span className="mb-2 block text-xs font-medium text-muted">Sign-in email</span><input value={email} readOnly className="h-12 w-full rounded-xl border border-line bg-card2 px-4 text-sm text-muted"/></label>
+  <p className="text-[11px] leading-5 text-muted">Your email is used to sign in. Contact support if you need to change it.</p>
+  {error&&<p role="alert" className="text-xs text-neg">{error}</p>}{saved&&<p role="status" className="text-xs text-pos">Profile updated.</p>}
+  <Button className="w-full" disabled={pending}>{pending?'Saving…':'Save changes'}</Button>
+ </form>;
+}

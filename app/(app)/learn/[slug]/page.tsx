@@ -1,0 +1,1 @@
+import { Article } from '@/components/learn/Article';import { articles } from '@/content/learn/articles';export function generateStaticParams(){return articles.map(a=>({slug:a.slug}))}export default async function Page({params}:{params:Promise<{slug:string}>}){const {slug}=await params;return <Article slug={slug}/>} 

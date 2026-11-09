@@ -1,0 +1,1 @@
+import { SettingsPages } from '@/components/settings/SettingsPages';import { getCurrentProfile } from '@/lib/profile';import { redirect } from 'next/navigation';export default async function Page(){const profile=await getCurrentProfile();if(!profile)redirect('/welcome');return <SettingsPages section="invite" profile={profile}/>} 
