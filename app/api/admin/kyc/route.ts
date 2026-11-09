@@ -38,7 +38,7 @@ export async function GET() {
       phone: typeof prefs.kyc_phone === 'string' ? prefs.kyc_phone : null,
       city: typeof prefs.kyc_city === 'string' ? prefs.kyc_city : null,
       source_of_funds: typeof prefs.kyc_source_of_funds === 'string' ? prefs.kyc_source_of_funds : null,
-      submitted_at: row.created_at,
+      submitted_at: typeof prefs.kyc_submitted_at === 'string' ? prefs.kyc_submitted_at : row.created_at,
       document_url: signed.data?.signedUrl ?? null,
       document_error: signed.error ? 'Document preview unavailable' : null,
     };
@@ -65,7 +65,7 @@ export async function POST(request: Request) {
   if (readError || !profile || profile.kyc_status !== 'in_review') return json({ error: 'This verification request is no longer awaiting review. Refresh the queue.' }, 409);
   const prefs = (profile.prefs ?? {}) as Record<string, unknown>;
   const documentPath = typeof prefs.kyc_document_path === 'string' ? prefs.kyc_document_path : '';
-  if (!documentPath.startsWith(userId + '/') || typeof prefs.kyc_phone !== 'string' || typeof prefs.kyc_source_of_funds !== 'string') {
+  if (!documentPath.startsWith(userId + '/') || typeof prefs.kyc_phone !== 'string' || typeof prefs.kyc_city !== 'string' || typeof prefs.kyc_country !== 'string' || typeof prefs.kyc_source_of_funds !== 'string') {
     return json({ error: 'The applicant record is incomplete. Request a corrected submission.' }, 409);
   }
 
