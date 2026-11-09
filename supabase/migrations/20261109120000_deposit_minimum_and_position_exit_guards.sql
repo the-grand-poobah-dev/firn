@@ -6,7 +6,7 @@ update public.plans set min_amount = 500 where min_amount is distinct from 500;
 
 alter table public.deposits
   add constraint deposits_verified_amount_min_500
-  check (verified_amount is null or verified_amount >= 500) not valid;
+  check (verified_amount is null or verified_amount >= 500);
 
 create or replace function public.credit_deposit(p_deposit_id uuid)
 returns uuid
