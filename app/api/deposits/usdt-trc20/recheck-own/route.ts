@@ -7,6 +7,9 @@ export const dynamic = 'force-dynamic';
 export const maxDuration = 30;
 const json = (body: unknown, status = 200) => NextResponse.json(body, { status, headers: { 'Cache-Control': 'no-store' } });
 export async function POST(request: Request) {
+  if ((process.env.USDT_DEPOSITS_ENABLED ?? 'false').trim().toLowerCase() !== 'true') {
+    return json({ error: 'USDT deposits are temporarily unavailable.' }, 503);
+  }
   const session = await createClient();
   const { data: { user } } = await session.auth.getUser();
   if (!user) return json({ error: 'Authentication required.' }, 401);
