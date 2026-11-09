@@ -8,10 +8,11 @@ export async function POST(request:Request){
  let body:unknown;try{body=await request.json()}catch{return json({error:'Invalid request.'},400)}
  if(!body||typeof body!=='object')return json({error:'Invalid request.'},400);
  const b=body as Record<string,unknown>; const amount=Number(b.amount);
+ if(b.early_exit===true)return json({error:'Early exit must be requested from one specific savings position.'},400);
  if(!Number.isFinite(amount)||amount<=0||amount>100000000)return json({error:'Enter a valid withdrawal amount.'},400);
  if(!['mpesa','bank','usdt_trc20'].includes(String(b.method)))return json({error:'Choose a valid payout method.'},400);
  if(typeof b.destination!=='string'||b.destination.trim().length<3||b.destination.length>300)return json({error:'Enter valid payout destination details.'},400);
- const {data,error}=await supabase.rpc('request_manual_withdrawal',{p_amount:amount,p_method:b.method as string,p_destination:b.destination.trim(),p_early_exit:b.early_exit===true});
+ const {data,error}=await supabase.rpc('request_manual_withdrawal',{p_amount:amount,p_method:b.method as string,p_destination:b.destination.trim(),p_early_exit:false});
  if(error){const msg=error.message.includes('Insufficient')?'Your available wallet balance is not enough for this request.':error.message;return json({error:msg},400);}
  return json({id:data,status:'pending'},201);
 }
