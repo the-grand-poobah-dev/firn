@@ -9,14 +9,15 @@ type Props = {
   selectedId?: string;
   returnTo?: string;
   onSelect?: (id: string) => void;
+  usdtEnabled?: boolean;
 };
 
-export function PaymentMethodSelector({ selectedId, returnTo = '/wallet', onSelect }: Props) {
+export function PaymentMethodSelector({ selectedId, returnTo = '/wallet', onSelect, usdtEnabled = false }: Props) {
   const router = useRouter();
 
   function selectMethod(id: string) {
     const method = paymentMethods.find((item) => item.id === id);
-    if (!method || method.status !== 'active') return;
+    if (!method || method.status !== 'active' || (method.id === 'crypto' && !usdtEnabled)) return;
 
     if (onSelect) {
       onSelect(id);
@@ -30,13 +31,14 @@ export function PaymentMethodSelector({ selectedId, returnTo = '/wallet', onSele
   return (
     <div className="space-y-2" aria-label="Payment methods">
       {paymentMethods.map((method) => {
-        const active = method.status === 'active';
+        const active = method.status === 'active' && (method.id !== 'crypto' || usdtEnabled);
         const selected = selectedId === method.id;
 
         return (
           <button
             key={method.id}
             type="button"
+            disabled={!active}
             aria-disabled={!active}
             aria-pressed={active ? selected : undefined}
             title={active ? undefined : 'Coming soon'}
