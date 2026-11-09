@@ -6,7 +6,7 @@ import { isDuplicateTxidError, verifyTronUsdtTransfer } from '@/lib/deposits/tro
 export const dynamic = 'force-dynamic';
 export const maxDuration = 30;
 const TXID = /^[a-fA-F0-9]{64}$/;
-const AMOUNT = /^(?:0|[1-9]\\d{0,17})(?:\\.\\d{1,6})?$/;
+const AMOUNT = /^(?:0|[1-9]\d{0,17})(?:\.\d{1,6})?$/;
 const response = (body: unknown, status = 200) => NextResponse.json(body, { status, headers: { 'Cache-Control': 'no-store' } });
 
 export async function POST(request: Request) {
