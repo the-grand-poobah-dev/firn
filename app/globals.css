@@ -28,3 +28,7 @@ button:focus-visible,a:focus-visible,input:focus-visible { outline:2px solid var
 .label { font-family:var(--font-mono),monospace; font-size:9px; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); }
 ::selection { background:var(--accent); color:var(--accent-on); }
 @media (prefers-reduced-motion: reduce) { *,*::before,*::after { animation-duration:.01ms!important; animation-iteration-count:1!important; scroll-behavior:auto!important; transition-duration:.01ms!important; } }
+
+/* Horizontal featured-read rails: hide scrollbars but preserve scrolling. */
+.scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+.scrollbar-hide::-webkit-scrollbar { display: none; }
