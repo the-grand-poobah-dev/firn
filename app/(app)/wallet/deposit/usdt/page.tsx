@@ -9,6 +9,7 @@ const TRON_ADDRESS_PATTERN = /^T[1-9A-HJ-NP-Za-km-z]{33}$/;
 export default async function UsdtDepositStep({ searchParams }: { searchParams: { returnTo?: string } }) {
   const { supabase, user } = await requireUser();
   const configuredAddress = process.env.DEPOSIT_USDT_TRC20_ADDRESS?.trim() ?? '';
+  // The receiving wallet is visible in manual-review mode; automated crediting stays disabled.
   const address = TRON_ADDRESS_PATTERN.test(configuredAddress) ? configuredAddress : null;
   const configuredMinimum = Number(process.env.MIN_DEPOSIT_USDT ?? '10');
   const minimumDeposit = Number.isFinite(configuredMinimum) && configuredMinimum > 0 ? configuredMinimum : 10;
