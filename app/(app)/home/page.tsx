@@ -40,7 +40,7 @@ export default async function HomePage() {
     {hasInvestments ? <>
       <FloatingCard className="p-4">
         <div className="flex items-start justify-between">
-          <div><p className="label">TOTAL INVESTMENT VALUE</p><p className="mt-2 text-[34px] font-semibold tracking-tight money"><CountUp value={portfolio.totals.value} format={n => usd(n, 2, currency)}/></p></div>
+          <div><p className="label">TOTAL INVESTMENT VALUE</p><p className="mt-2 text-[34px] font-semibold tracking-tight money"><CountUp value={portfolio.totals.value} currency={currency} decimals={2}/></p></div>
           <Link href="/home/portfolio" className="grid size-9 place-items-center rounded-full bg-card2 text-accent" aria-label="View portfolio"><Icon name="arrow" size={18}/></Link>
         </div>
         <div className="mt-3 flex items-center gap-2 text-xs">
@@ -49,8 +49,8 @@ export default async function HomePage() {
         </div>
         <div className="mt-4 h-12">{spark.length > 1 ? <Sparkline data={spark} className="h-12 w-full"/> : <div className="h-full rounded-xl bg-card2/60"/>}</div>
         <div className="mt-4 grid grid-cols-3 divide-x divide-line border-t border-line pt-4">
-          <div className="pr-2"><p className="label">PRINCIPAL</p><p className="mt-1 text-sm font-semibold money"><CountUp value={portfolio.totals.principal} format={n => usd(n, 0, currency)}/></p></div>
-          <div className="px-3"><p className="label">EARNED</p><p className="mt-1 text-sm font-semibold text-pos money"><CountUp value={portfolio.totals.earned} format={n => usd(n, 2, currency)}/></p></div>
+          <div className="pr-2"><p className="label">PRINCIPAL</p><p className="mt-1 text-sm font-semibold money"><CountUp value={portfolio.totals.principal} currency={currency} decimals={0}/></p></div>
+          <div className="px-3"><p className="label">EARNED</p><p className="mt-1 text-sm font-semibold text-pos money"><CountUp value={portfolio.totals.earned} currency={currency} decimals={2}/></p></div>
           <div className="pl-3"><p className="label">BLENDED APY</p><p className="mt-1 text-sm font-semibold">{pct(portfolio.totals.blendedApy)}</p></div>
         </div>
       </FloatingCard>
