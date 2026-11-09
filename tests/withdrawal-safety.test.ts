@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 
 const migration = readFileSync(
-  new URL('../supabase/migrations/20261109120000_deposit_minimum_and_position_exit_guards.sql', import.meta.url),
+  new URL('../supabase/migrations/20261109102211_deposit_minimum_and_position_exit_guards.sql', import.meta.url),
   'utf8',
 );
 
