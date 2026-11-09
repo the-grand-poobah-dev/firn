@@ -31,7 +31,7 @@ export default function DepositPage({ searchParams }: { searchParams: { returnTo
           <div>
             <p className="text-sm font-semibold">USDT deposits are not active yet</p>
             <p className="mt-1 text-xs leading-5 text-muted">
-              The dedicated USDT setup page is being secured. Do not send funds until FIRN confirms your TronLink wallet and enables verified deposits. No payment is taken or wallet balance credited while this notice is shown.
+              A valid TRON receiving wallet is not configured. Do not send funds until FIRN displays its receiving address and TRC20 instructions.
             </p>
           </div>
         </div>
