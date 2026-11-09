@@ -187,7 +187,7 @@ export function UsdtDepositClient({ address, minimumDeposit, initialDeposits, in
         </Card>
       ) : (
         <Card className="border-neg/40">
-          <div className="flex gap-2"><Icon name="warn" className="shrink-0 text-neg" size={18}/><div><p className="text-sm font-semibold">Receiving address not configured</p><p className="mt-1 text-xs leading-5 text-muted">Firn has not been configured with a valid TRC20 receiving address. Deposits are unavailable until the server environment variable is set correctly. Do not send funds.</p></div></div>
+          <div className="flex gap-2"><Icon name="warn" className="shrink-0 text-neg" size={18}/><div><p className="text-sm font-semibold">USDT deposits are not active yet</p><p className="mt-1 text-xs leading-5 text-muted">FIRN has a receiving wallet configured, but deposit processing is still locked while wallet ownership verification and database security checks are completed. Do not send funds or submit a transaction yet.</p></div></div>
         </Card>
       )}
 
@@ -201,7 +201,7 @@ export function UsdtDepositClient({ address, minimumDeposit, initialDeposits, in
         </div>
       </Card>
 
-      <Card>
+      {address && <Card>
         <h2 className="text-sm font-semibold">How to send your USDT</h2>
         <ol className="mt-3 list-decimal space-y-2 pl-5 text-sm leading-6 text-muted">
           <li>Open Binance or another wallet and choose <strong className="text-fg">USDT</strong> and <strong className="text-fg">Withdraw / Send</strong>.</li>
@@ -211,9 +211,9 @@ export function UsdtDepositClient({ address, minimumDeposit, initialDeposits, in
           <li>Confirm the transfer. After it is broadcast, copy its transaction ID (TXID) from your wallet.</li>
         </ol>
         <p className="mt-3 rounded-xl bg-card2 p-3 text-xs leading-5 text-muted">If you send from one Binance account to another Binance account, Binance may process it as an internal transfer rather than an on-chain transaction. Such transfers may need manual review and can take longer to reconcile.</p>
-      </Card>
+      </Card>}
 
-      <Card>
+      {address && <Card>
         <div>
           <h2 className="text-sm font-semibold">I have sent my USDT</h2>
           <p className="mt-1 text-xs leading-5 text-muted">Submit the on-chain transaction ID and amount you sent. This records your claim for verification; it does not itself confirm the transfer or credit your wallet.</p>
@@ -226,7 +226,7 @@ export function UsdtDepositClient({ address, minimumDeposit, initialDeposits, in
           <Button type="submit" className="w-full" disabled={!address || submitting}>{submitting ? 'Submitting…' : 'Submit transaction for verification'} <Icon name="arrow" size={16}/></Button>
           {formMessage && <p role="status" aria-live="polite" className="rounded-xl bg-card2 p-3 text-xs leading-5 text-muted">{formMessage}</p>}
         </form>
-      </Card>
+      </Card>}
 
       <Card>
         <div className="flex items-center justify-between gap-3">
