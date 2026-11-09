@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { Icon } from '@/components/ui/Icon';
+import { usdtToKes, usdtToUsd } from '@/lib/fx';
 
 const QRCodeSVG = dynamic(() => import('qrcode.react').then((module) => module.QRCodeSVG), { ssr: false });
 
@@ -35,9 +36,9 @@ const TXID_PATTERN = /^[a-fA-F0-9]{64}$/;
 function statusText(status: DepositStatus) {
   const labels: Record<DepositStatus, string> = {
     awaiting_payment: 'Awaiting payment',
-    pending_verification: 'Pending verification',
+    pending_verification: 'Pending manual review',
     confirmed: 'Confirmed',
-    needs_review: 'Needs review',
+    needs_review: 'Pending manual review',
     rejected: 'Rejected',
     expired: 'Expired',
   };
@@ -60,7 +61,6 @@ export function UsdtDepositClient({ address, minimumDeposit, initialDeposits, in
   const [deposits, setDeposits] = useState(initialDeposits);
   const [statusError, setStatusError] = useState(initialStatusError);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
-  const [rechecking, setRechecking] = useState('');
 
   const refreshDeposits = useCallback(async () => {
     try {
@@ -83,21 +83,6 @@ export function UsdtDepositClient({ address, minimumDeposit, initialDeposits, in
     return () => window.clearInterval(timer);
   }, [refreshDeposits]);
 
-  async function recheckDeposit(depositId: string) {
-    setRechecking(depositId);
-    setFormMessage('');
-    try {
-      const response = await fetch('/api/deposits/usdt-trc20/recheck-own', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ depositId }),
-      });
-      const payload = await response.json();
-      setFormMessage(payload.message || payload.error || 'Deposit recheck finished.');
-      await refreshDeposits();
-    } catch {
-      setFormMessage('Could not recheck this deposit. Please try again.');
-    } finally { setRechecking(''); }
-  }
 
   async function copyAddress() {
     if (!address) return;
@@ -141,7 +126,7 @@ export function UsdtDepositClient({ address, minimumDeposit, initialDeposits, in
       }
       setTxid('');
       setAmount('');
-      setFormMessage(payload.status === 'confirmed' ? 'Transfer verified and wallet credited.' : 'Transaction recorded for verification or manual review. Your wallet has not been credited yet.');
+      setFormMessage('Transaction submitted for manual verification. Your FIRN wallet has not been credited yet.');
       await refreshDeposits();
     } catch {
       setFormMessage('Network error while submitting. Please try again.');
@@ -156,7 +141,7 @@ export function UsdtDepositClient({ address, minimumDeposit, initialDeposits, in
       <header>
         <p className="label">FUND YOUR FIRN WALLET</p>
         <h1 className="mt-2 text-2xl font-semibold">Deposit USDT (TRC20)</h1>
-        <p className="mt-2 text-sm text-muted">Send Tether using the TRON network only.</p>
+        <p className="mt-2 text-sm text-muted">Send Tether using the TRON network only. Every deposit is checked manually before your FIRN wallet is credited. Every deposit is checked manually before your FIRN wallet is credited.</p>
       </header>
 
       <Card>
@@ -187,7 +172,7 @@ export function UsdtDepositClient({ address, minimumDeposit, initialDeposits, in
         </Card>
       ) : (
         <Card className="border-neg/40">
-          <div className="flex gap-2"><Icon name="warn" className="shrink-0 text-neg" size={18}/><div><p className="text-sm font-semibold">USDT deposits are temporarily unavailable</p><p className="mt-1 text-xs leading-5 text-muted">Please do not send funds until deposits are available again.</p></div></div>
+          <div className="flex gap-2"><Icon name="warn" className="shrink-0 text-neg" size={18}/><div><p className="text-sm font-semibold">USDT deposits are not active yet</p><p className="mt-1 text-xs leading-5 text-muted">FIRN has a receiving wallet configured, but deposit processing is still locked while wallet ownership verification and database security checks are completed. Do not send funds or submit a transaction yet.</p></div></div>
         </Card>
       )}
 
@@ -204,25 +189,26 @@ export function UsdtDepositClient({ address, minimumDeposit, initialDeposits, in
       {address && <Card>
         <h2 className="text-sm font-semibold">How to send your USDT</h2>
         <ol className="mt-3 list-decimal space-y-2 pl-5 text-sm leading-6 text-muted">
-          <li>Open your wallet and choose <strong className="text-fg">USDT</strong> and <strong className="text-fg">Send</strong>.</li>
+          <li>Open Binance or another wallet and choose <strong className="text-fg">USDT</strong> and <strong className="text-fg">Withdraw / Send</strong>.</li>
           <li>Select <strong className="text-fg">TRON (TRC20)</strong> as the network.</li>
           <li>Paste or scan the Firn receiving address shown above.</li>
           <li>Enter an amount of at least {minimumDeposit} USDT and review the network and address carefully.</li>
           <li>Confirm the transfer. After it is broadcast, copy its transaction ID (TXID) from your wallet.</li>
         </ol>
-        <p className="mt-3 rounded-xl bg-card2 p-3 text-xs leading-5 text-muted">Transfers from exchanges or wallets can take a few minutes. Paste your TXID once the transfer is sent.</p>
+        <p className="mt-3 rounded-xl bg-card2 p-3 text-xs leading-5 text-muted">If you send from one Binance account to another Binance account, Binance may process it as an internal transfer rather than an on-chain transaction. Such transfers may need manual review and can take longer to reconcile.</p>
       </Card>}
 
       {address && <Card>
         <div>
           <h2 className="text-sm font-semibold">I have sent my USDT</h2>
-          <p className="mt-1 text-xs leading-5 text-muted">Submit the on-chain transaction ID and amount you sent. This records your claim for verification; it does not itself confirm the transfer or credit your wallet.</p>
+          <p className="mt-1 text-xs leading-5 text-muted">Submit your transaction ID and amount. This creates a pending claim only. FIRN will check the confirmed transfer on TRON and manually approve the actual received amount before crediting your wallet.</p>
         </div>
         <form className="mt-4 space-y-3" onSubmit={submitClaim}>
           <label className="block text-xs font-semibold" htmlFor="deposit-txid">Transaction ID (TXID)</label>
           <input id="deposit-txid" value={txid} onChange={(event) => setTxid(event.target.value)} placeholder="64-character transaction hash" autoComplete="off" spellCheck={false} required pattern="[a-fA-F0-9]{64}" title="Enter exactly 64 hexadecimal characters." className="min-h-12 w-full rounded-xl border border-line bg-card2 px-3 text-sm text-fg outline-none focus-visible:ring-2 focus-visible:ring-accent"/>
           <label className="block text-xs font-semibold" htmlFor="deposit-amount">Amount sent (USDT)</label>
           <input id="deposit-amount" type="number" min={minimumDeposit} step="0.000001" inputMode="decimal" value={amount} onChange={(event) => setAmount(event.target.value)} placeholder={String(minimumDeposit)} required className="min-h-12 w-full rounded-xl border border-line bg-card2 px-3 text-sm text-fg outline-none focus-visible:ring-2 focus-visible:ring-accent"/>
+          <p className="-mt-1 text-xs text-muted">1 USDT = 1 USD. {amount ? "Equivalent: $" + usdtToUsd(Number(amount)).toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2}) + " · KSh " + usdtToKes(Number(amount)).toLocaleString("en-KE",{maximumFractionDigits:0}) : "KES equivalent at the fixed rate: KSh " + usdtToKes(minimumDeposit).toLocaleString("en-KE")}</p>
           <Button type="submit" className="w-full" disabled={!address || submitting}>{submitting ? 'Submitting…' : 'Submit transaction for verification'} <Icon name="arrow" size={16}/></Button>
           {formMessage && <p role="status" aria-live="polite" className="rounded-xl bg-card2 p-3 text-xs leading-5 text-muted">{formMessage}</p>}
         </form>
@@ -245,7 +231,7 @@ export function UsdtDepositClient({ address, minimumDeposit, initialDeposits, in
                 <p className="mt-2 text-[10px] text-muted">Submitted {new Date(deposit.created_at).toLocaleString()}</p>
                 {deposit.verified_amount !== null && <p className="mt-1 text-xs text-muted">Verified amount: {deposit.verified_amount} USDT</p>}
                 {deposit.failure_reason && <p className="mt-2 text-xs text-neg">{deposit.failure_reason}</p>}
-                {(deposit.status === 'pending_verification' || deposit.status === 'needs_review') && <Button type="button" variant="ghost" className="mt-2 min-h-9 px-3 text-xs" disabled={rechecking === deposit.id} onClick={() => void recheckDeposit(deposit.id)}>{rechecking === deposit.id ? 'Rechecking…' : 'Recheck transaction'}</Button>}
+                
               </div>
             ))}
           </div>

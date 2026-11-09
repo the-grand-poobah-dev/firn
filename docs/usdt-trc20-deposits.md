@@ -1,89 +1,44 @@
-# FIRN USDT TRC20 deposits — operator runbook
+# FIRN USDT TRC20 deposits — manual review mode
 
-## Canonical deposit configuration
+FIRN accepts USDT on TRON (TRC20) through a shared receiving wallet. Every customer claim is reviewed by an authenticated FIRN administrator before the wallet is credited. The claim endpoint never verifies or credits a transaction automatically.
 
-- Network: TRON / TRC20
-- Asset: Tether USD (USDT)
-- FIRN receiving wallet: supplied only through the server-side `DEPOSIT_USDT_TRC20_ADDRESS` environment variable.
-- Official USDT TRON contract: `TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t`
-- Minimum: `10` USDT by default (configure `MIN_DEPOSIT_USDT`)
+## Deposit rules
 
-The receiving address is read only from the server-side `DEPOSIT_USDT_TRC20_ADDRESS` variable. Do not hardcode it in client components or publish it as `NEXT_PUBLIC_`.
+- Asset: official Tether USD (USDT) on TRON (TRC20) only.
+- Conversion: `1 USDT = 1 USD`.
+- Minimum: **500 USDT (USD 500)**. `MIN_DEPOSIT_USDT` is set to `500`, and both the customer submission API and admin approval API enforce a hard 500-USDT floor even if an environment variable is misconfigured.
+- Display conversion: `1 USD = KSh 135`. KES is a display preference only; all account and ledger amounts remain denominated in USD.
+- Other deposit methods remain Coming Soon until their real providers are integrated.
 
-## Required server environment variables
+## Environment variables
 
-| Variable | Purpose | Who supplies it |
-|---|---|---|
-| `DEPOSIT_USDT_TRC20_ADDRESS` | Current receiving wallet (valid TRON Base58Check address) | FIRN operator |
-| `ACCEPTED_DEPOSIT_ADDRESSES` | Optional comma-separated allowlist for current and historical pinned wallets. If omitted, only the active receiving address is accepted for new claims; historical addresses require an explicit list. | FIRN operator |
-| `USDT_DEPOSITS_ENABLED` | Fail-closed kill switch; only explicit `true` enables verification and rechecks | FIRN operator |
-| `USDT_TRC20_CONTRACT` | Official contract above | FIRN operator |
-| `MIN_DEPOSIT_USDT` | Minimum verified amount, default 10 | FIRN operator |
-| `TRONGRID_API_KEY` | Authenticated TronGrid reads | FIRN operator |
-| `SUPABASE_SERVICE_ROLE_KEY` | Server-only DB writes and privileged RPC | Supabase project owner |
-| `CRON_SECRET` | Bearer token protecting scheduled rechecks | Generate privately; never commit |
+The Vercel project must have these values for Production, Preview, and Development:
 
-Never add service-role keys, TronGrid API keys, or cron secrets to Git, client-side variables, or chat.
+| Variable | Purpose |
+| --- | --- |
+| `DEPOSIT_USDT_TRC20_ADDRESS` | FIRN receiving TRON address |
+| `TRONGRID_API_KEY` | Existing TronGrid API key; retained for future automatic verification |
+| `USDT_TRC20_CONTRACT` | Official TRON USDT contract: `TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t` |
+| `MIN_DEPOSIT_USDT` | `500` |
+| `USDT_DEPOSITS_ENABLED` | `false` in manual-review mode; automated processing stays disabled |
 
-## Database setup
+Never commit or share API keys in source code.
 
-Apply these migrations in order to the **development database first**:
-1. `supabase/migrations/20261108150000_secure_usdt_trc20_deposits_admin.sql` creates the deposit/admin foundation.
-2. `supabase/migrations/20261108193000_pin_usdt_deposit_recipients.sql` pins the receiving address per deposit, enforces the pinned-recipient check before crediting, and disables manual admin crediting.
-3. `supabase/migrations/20261108210000_revoke_demo_deposit_credit.sql` revokes client execution of the legacy `deposit_demo` and `withdraw_demo` RPCs; removes broad browser table grants on deposits/ledger/review events; and limits profile updates to ordinary profile/preferences columns.
-4. `supabase/migrations/20261108220000_require_kyc_for_positions.sql` requires server-verified KYC before a user can lock funds into a savings position.
+## Customer flow
 
-The first migration adds:
-- `profiles.is_admin`, with a trigger preventing self-promotion
-- `deposits`, owner/admin read policies, unique TXIDs, and expiry metadata
-- `wallet_ledger.deposit_id` unique linkage and six-decimal ledger precision
-- `deposit_review_events` for reviewer audit history
-- service-role-only rate limiting and idempotent `credit_deposit(uuid)`
+1. The customer opens Wallet → Add money → USDT (TRC20).
+2. FIRN displays the configured receiving wallet, QR code, TRC20-only instructions, and the 500-USDT minimum.
+3. The customer sends at least 500 USDT on TRON, then submits the transaction ID and claimed amount.
+4. FIRN records the claim as `pending_verification`. It does not credit the wallet.
 
-The third migration also prevents signed-in clients from changing `kyc_status`, `referral_code`, `is_admin`, or wallet/deposit records directly. The legacy demo deposit and withdrawal RPCs are removed from all API roles. The fourth migration adds the KYC check inside `create_position`; UI-only checks are not sufficient.
+## Administrator review
 
-The first migration is already applied to the existing production project. Migrations 2–4 are prepared but not applied. The Supabase account currently has no separate development project; do not apply migrations 2–4 to production until a development project exists, all migrations and RLS tests pass there, and the owner explicitly approves production migration.
+1. Open `/admin/deposits` while signed in as a FIRN administrator.
+2. Open the TronScan link for the pending claim.
+3. Confirm the transaction succeeded and is confirmed, the official USDT TRC20 token was transferred to the FIRN receiving wallet, and the transaction has not already been credited.
+4. Enter the actual amount received (at least 500 USDT) and approve, or reject with a clear reason.
+5. Approval goes through the existing protected, idempotent `review_deposit` / `credit_deposit` database path. Never approve from the claimed amount alone.
 
-After the migration, grant the intended admin manually in the Supabase SQL Editor:
+## Activation / database
 
-```sql
-update public.profiles
-set is_admin = true
-where id = '<YOUR_AUTH_USER_UUID>';
-```
-
-Get the UUID from Supabase Authentication → Users. Do not use an email string in the update. All other users remain `is_admin = false`.
-
-## Runtime behavior
-
-- `POST /api/deposits/usdt-trc20/verify`: authenticated claim submission, per-user rate limit, unique-TXID enforcement, immutable receiving-address snapshot, allowlist enforcement, solidified transaction body and receipt verification, official contract Transfer log decoding, recipient/minimum checks, and crediting the verified six-decimal amount only.
-- `POST /api/deposits/usdt-trc20/recheck-own`: authenticated owner-only manual recheck for that user's pending deposit.
-- `GET /api/deposits/usdt-trc20/recheck`: CRON_SECRET-protected scheduled retry and 72-hour expiry sweep.
-- `/admin/deposits`: admin-only review queue and active receiving-address display with a Tronscan link. Administrators may reject with a reason; manual approval/crediting is disabled. Only automated on-chain verification can credit a deposit.
-- `GET /api/deposits`: own-deposit status only.
-
-Vercel Hobby supports daily cron schedules only. The configured cron is daily at 03:00 UTC; users can manually recheck pending claims in the app. If the Vercel plan is upgraded to Pro, a more frequent schedule can be selected after checking plan limits.
-
-## Pre-launch verification checklist
-
-1. Apply migration to development Supabase and verify RLS with normal-user and admin sessions.
-2. Configure `DEPOSIT_USDT_TRC20_ADDRESS`, `TRONGRID_API_KEY`, `USDT_TRC20_CONTRACT`, and `MIN_DEPOSIT_USDT` in Vercel Preview and Production (never expose secrets publicly). `ACCEPTED_DEPOSIT_ADDRESSES` is optional; if supplied, include the active wallet and every older pinned recipient that still needs rechecking.
-3. Confirm the configured wallet address and contract match the operator's self-custody wallet and the official TRON USDT contract.
-4. Keep `USDT_DEPOSITS_ENABLED=false` until the sender wallet is cryptographically bound to the signed-in FIRN user. The server rejects any configured USDT contract other than the official TRON USDT contract. A public TXID alone is not proof of who sent the funds.
-5. Run CI: lint, TypeScript, mocked TronGrid tests, and production build.
-6. Test success, look-alike token, wrong recipient, underpayment, duplicate TXID, unconfirmed transaction, timeout, retry, rejected manual approval, rejection, and double-credit attempts.
-7. Verify exactly one wallet ledger row per deposit and that its amount equals `verified_amount`, not `claimed_amount`.
-8. Only then request explicit approval to apply the migration to production and merge/deploy.
-
-**Do not accept real deposits until all pre-launch checks pass.**
-
-
-## Admin reconciliation report
-
-- Admin page: `/admin/deposits/reconciliation` (linked from `/admin/deposits`).
-- API: `GET /api/admin/deposits/reconciliation`; both the page and API enforce the server-side `profiles.is_admin` check.
-- Reads confirmed incoming USDT TRC20 history from TronGrid using `only_confirmed=true`, `only_to=true`, the active receiving address, and the official USDT contract. It follows TronGrid pagination fingerprints.
-- Compares the confirmed incoming total with `verified_amount` summed over confirmed Supabase deposits pinned to that same receiving address.
-- Lists incoming TXIDs with no deposit row, TXID-level chain/Supabase amount differences, and deposit ledger credits whose TXID or amounts fail a fresh on-chain verification against the pinned receiving address.
-- This endpoint is read-only: it uses Supabase SELECT queries and TronGrid read endpoints only. It does not call deposit credit, review, insert, update, or delete operations.
-- Safety caps are reported explicitly as an incomplete report rather than a clean reconciliation: up to 25 TronGrid pages (200 events per page), 50,000 deposit rows, 10,000 ledger rows, and 40 ledger TXIDs re-verified per request. The admin page offers successive read-only batches until every returned ledger row has been checked.
+The current production Supabase project already contains the deposit, review-event, rate-limit, wallet-ledger, and protected credit/review functions used by this manual flow. No second Supabase project or recipient-pinning migration is required. Automatic verification and cron crediting must remain disabled until sender-wallet ownership proof is implemented and tested.

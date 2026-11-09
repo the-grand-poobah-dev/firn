@@ -26,7 +26,6 @@ type DepositRow = {
   txid: string;
   status: string;
   verified_amount: string | number | null;
-  receiving_address: string | null;
   from_address: string | null;
   to_address: string | null;
   block_timestamp: string | null;
@@ -96,7 +95,7 @@ async function readAllDepositRows(admin: ReturnType<typeof createAdminClient>) {
   const pageSize = 1000;
   for (let offset = 0; offset < 50000; offset += pageSize) {
     const { data, error } = await admin.from('deposits')
-      .select('id,txid,status,verified_amount,receiving_address,from_address,to_address,block_timestamp,confirmations,credited_at')
+      .select('id,txid,status,verified_amount,to_address,from_address,to_address,block_timestamp,confirmations,credited_at')
       .order('created_at', { ascending: true }).range(offset, offset + pageSize - 1);
     if (error) throw new Error('Could not read deposit TXIDs from Supabase.');
     rows.push(...(data ?? []) as DepositRow[]);
@@ -109,8 +108,8 @@ async function readConfirmedDepositsForAddress(admin: ReturnType<typeof createAd
   const pageSize = 1000;
   for (let offset = 0; offset < 50000; offset += pageSize) {
     const { data, error } = await admin.from('deposits')
-      .select('id,txid,status,verified_amount,receiving_address,from_address,to_address,block_timestamp,confirmations,credited_at')
-      .eq('status', 'confirmed').eq('receiving_address', address)
+      .select('id,txid,status,verified_amount,to_address,from_address,to_address,block_timestamp,confirmations,credited_at')
+      .eq('status', 'confirmed').eq('to_address', address)
       .order('created_at', { ascending: true }).range(offset, offset + pageSize - 1);
     if (error) throw new Error('Could not read confirmed deposits. Confirm the recipient-pinning migration has been applied.');
     rows.push(...(data ?? []) as DepositRow[]);
@@ -137,7 +136,7 @@ async function readDepositsByIds(admin: ReturnType<typeof createAdminClient>, id
   for (let i = 0; i < ids.length; i += 100) {
     const batch = ids.slice(i, i + 100);
     const { data, error } = await admin.from('deposits')
-      .select('id,txid,status,verified_amount,receiving_address,from_address,to_address,block_timestamp,confirmations,credited_at')
+      .select('id,txid,status,verified_amount,to_address,from_address,to_address,block_timestamp,confirmations,credited_at')
       .in('id', batch);
     if (error) throw new Error('Could not match ledger entries to their deposit rows.');
     for (const row of (data ?? []) as DepositRow[]) map.set(row.id, row);
@@ -259,9 +258,9 @@ export async function GET(request: Request) {
       };
       if (!deposit) return { ...base, reason: 'Wallet ledger entry has no matching deposit row.' };
       if (ledgerRow.kind !== 'deposit' || ledgerRow.method !== 'usdt_trc20') return { ...base, reason: 'Ledger row kind or method does not match a USDT TRC20 deposit credit.' };
-      if (deposit.status !== 'confirmed' || !deposit.receiving_address) return { ...base, reason: 'Deposit row is not confirmed or has no pinned receiving address.' };
+      if (deposit.status !== 'confirmed' || !deposit.to_address) return { ...base, reason: 'Deposit row is not confirmed or has no pinned receiving address.' };
       try {
-        const result = await verifyTronUsdtTransfer(deposit.txid, deposit.receiving_address, { enforceMinimum: false });
+        const result = await verifyTronUsdtTransfer(deposit.txid, deposit.to_address, { enforceMinimum: false });
         if (result.state !== 'verified') return { ...base, reason: result.reason };
         const ledgerUnits = safeUnits(ledgerRow.amount);
         const verifiedUnits = safeUnits(deposit.verified_amount);

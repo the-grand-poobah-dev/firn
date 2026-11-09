@@ -3,12 +3,13 @@ import {useState} from 'react';
 import Link from 'next/link';
 import {signOutAction} from '@/app/auth/actions';
 import {Icon} from '@/components/ui/Icon';
-export function HomeAccountMenu({name}:{name:string}){
+import Image from 'next/image';
+export function HomeAccountMenu({name,avatarUrl}:{name:string;avatarUrl:string|null}){
  const [open,setOpen]=useState(false);
  const initial=name.trim().charAt(0).toUpperCase()||'F';
  return <div className="relative">
   <button type="button" aria-expanded={open} aria-haspopup="menu" onClick={()=>setOpen(v=>!v)} className="flex min-w-0 items-center gap-3 rounded-full text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">
-   <span className="grid size-11 shrink-0 place-items-center rounded-full bg-accent text-base font-semibold text-accent-on">{initial}</span>
+   <span className="relative grid size-11 shrink-0 place-items-center overflow-hidden rounded-full bg-accent text-base font-semibold text-accent-on">{avatarUrl?<Image src={avatarUrl} alt="Profile picture" fill sizes="44px" unoptimized className="object-cover"/>:initial}</span>
    <span className="min-w-0"><span className="block text-xs text-muted">Welcome back</span><span className="block max-w-[145px] truncate text-base font-semibold">{name||'Investor'}</span></span>
    <Icon name="down" size={15} className="text-muted"/>
   </button>

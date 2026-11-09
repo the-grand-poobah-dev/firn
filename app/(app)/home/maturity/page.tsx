@@ -8,8 +8,9 @@ import { Card } from '@/components/ui/Card';
 export const dynamic = 'force-dynamic';
 
 export default async function MaturityPage() {
-  await requireUser();
-  const portfolio = await getPortfolio();
+  const { supabase, user } = await requireUser();
+  const [{ data: profile }, portfolio] = await Promise.all([supabase.from('profiles').select('currency').eq('id', user.id).maybeSingle(), getPortfolio()]);
+  const currency = profile?.currency === 'KES' ? 'KES' : 'USD';
   if (!portfolio.positions.length) return <div className="space-y-5"><TopBar title="Maturity" backHref="/investments"/><EmptySavings/></div>;
   const positions = [...portfolio.positions].sort((a,b) => a.daysLeft-b.daysLeft);
   return <div className="space-y-5">
@@ -21,7 +22,7 @@ export default async function MaturityPage() {
         <div><p className="text-sm font-semibold">{position.plan==='six'?'Firn Six':'Firn Twelve'}</p><p className="mt-1 text-xs text-muted">Matures {longDate(position.maturesOn)}</p></div>
         <span className="rounded-full bg-card2 px-3 py-1 text-xs font-semibold">{position.daysLeft} days</span>
       </div>
-      <div className="mt-4 flex justify-between border-t border-line pt-3 text-xs"><span className="text-muted">Current value</span><strong className="money">{usd(position.value,2)}</strong></div>
+      <div className="mt-4 flex justify-between border-t border-line pt-3 text-xs"><span className="text-muted">Current value</span><strong className="money">{usd(position.value,2,currency)}</strong></div>
     </Card>)}</div>
   </div>;
 }

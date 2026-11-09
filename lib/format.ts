@@ -1,5 +1,6 @@
-export function usd(n: number, decimals = 0): string {
-  return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: decimals, maximumFractionDigits: decimals }).format(n);
+import { formatCurrency, type Currency } from '@/lib/fx';
+export function usd(n: number, decimals = 0, currency: Currency = 'USD'): string {
+  return formatCurrency(n, currency, decimals);
 }
 export function pct(n: number, decimals = 1): string {
   return new Intl.NumberFormat('en-US', { style: 'percent', minimumFractionDigits: decimals, maximumFractionDigits: decimals }).format(n);

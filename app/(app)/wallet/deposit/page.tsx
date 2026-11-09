@@ -3,14 +3,17 @@ import { TopBar } from '@/components/app/TopBar';
 import { Card } from '@/components/ui/Card';
 import { Icon } from '@/components/ui/Icon';
 import { PaymentMethodSelector } from '@/components/wallet/PaymentMethodSelector';
-import { areUsdtDepositsEnabled, getActiveDepositAddress } from '@/lib/deposits/config';
 
 export const dynamic = 'force-dynamic';
 
+const TRON_ADDRESS_PATTERN = /^T[1-9A-HJ-NP-Za-km-z]{33}$/;
+
 export default async function DepositPage({ searchParams }: { searchParams: Promise<{ returnTo?: string; method?: string }> }) {
-  const query = await searchParams;
-  const returnTo = query.returnTo?.startsWith('/save/') ? query.returnTo : '/wallet';
-  const usdtEnabled = areUsdtDepositsEnabled() && Boolean(getActiveDepositAddress());
+  const params = await searchParams;
+  const returnTo = params.returnTo?.startsWith('/save/') ? params.returnTo : '/wallet';
+  const configuredAddress = process.env.DEPOSIT_USDT_TRC20_ADDRESS?.trim() ?? '';
+  // Enable the setup screen when a valid receiving wallet exists. All claims remain manual-review only.
+  const usdtEnabled = TRON_ADDRESS_PATTERN.test(configuredAddress);
 
   return (
     <div className="space-y-5">
@@ -18,22 +21,22 @@ export default async function DepositPage({ searchParams }: { searchParams: Prom
       <header>
         <p className="label">FUND YOUR FIRN WALLET</p>
         <h1 className="mt-2 text-2xl font-semibold">Choose a top-up method</h1>
-        <p className="mt-2 text-sm text-muted">{usdtEnabled ? 'USDT on Tron is available.' : 'Deposits are temporarily unavailable.'} Other payment methods will be enabled as their integrations launch.</p>
+        <p className="mt-2 text-sm text-muted">USDT on Tron is the supported crypto deposit method. Other payment methods will be enabled as their integrations launch.</p>
       </header>
 
-      <PaymentMethodSelector selectedId={query.method} returnTo={returnTo} usdtEnabled={usdtEnabled} />
+      <PaymentMethodSelector selectedId={params.method} returnTo={returnTo} usdtEnabled={usdtEnabled} />
 
-      <Card className="border-warm/40">
+      {!usdtEnabled && <Card className="border-warm/40">
         <div className="flex gap-2">
           <Icon name="warn" className="shrink-0 text-warm" size={18} />
           <div>
-            <p className="text-sm font-semibold">Deposit processing is not enabled yet</p>
+            <p className="text-sm font-semibold">USDT deposits are not active yet</p>
             <p className="mt-1 text-xs leading-5 text-muted">
-              Selecting USDT opens the dedicated deposit setup screen. Do not send funds until that screen provides a verified receiving address and deposit instructions. No payment is taken or wallet balance credited by this selector.
+              A valid TRON receiving wallet is not configured. Do not send funds until FIRN displays its receiving address and TRC20 instructions.
             </p>
           </div>
         </div>
-      </Card>
+      </Card>}
 
       <Link href={returnTo} className="flex min-h-11 items-center justify-center gap-2 rounded-full bg-accent px-4 text-sm font-semibold text-accent-on">
         Return to savings <Icon name="arrow" size={16} />

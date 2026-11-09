@@ -15,6 +15,6 @@ const prefsSchema = z.object({
 export const profilePatchSchema = z.object({
   full_name: z.string().trim().min(2).max(100).optional(),
   country: z.string().trim().min(2).max(80).optional(),
-  currency: z.enum(['USD','CHF','EUR','KES','AED']).optional(),
+  currency: z.enum(['USD','KES']).optional(),
   prefs: prefsSchema.optional(),
 }).strict().refine(v => Object.keys(v).length > 0, 'Provide at least one profile field.');

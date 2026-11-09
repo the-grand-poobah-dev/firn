@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { MIN_USDT_DEPOSIT } from '@/lib/fx';
 
 export const dynamic = 'force-dynamic';
 const json = (data: unknown, status = 200) => NextResponse.json(data, { status, headers: { 'Cache-Control': 'no-store' } });
@@ -12,7 +13,6 @@ async function getAdmin() {
   return data?.is_admin === true ? user : null;
 }
 export async function GET() {
-  if (process.env.VERCEL_ENV && process.env.VERCEL_ENV !== 'production') return json({ error: 'Admin deposit tools are unavailable in Preview and Development.' }, 404);
   const actor = await getAdmin();
   if (!actor) return json({ error: 'Administrator access required.' }, 403);
   const admin = createAdminClient();
@@ -25,7 +25,6 @@ export async function GET() {
   return json({ deposits: (data ?? []).map(row => ({ ...row, user_label: names.get(row.user_id) ?? row.user_id })) });
 }
 export async function POST(request: Request) {
-  if (process.env.VERCEL_ENV && process.env.VERCEL_ENV !== 'production') return json({ error: 'Admin deposit tools are unavailable in Preview and Development.' }, 404);
   const actor = await getAdmin();
   if (!actor) return json({ error: 'Administrator access required.' }, 403);
   let parsed: unknown;
@@ -34,10 +33,13 @@ export async function POST(request: Request) {
   const body = parsed as { depositId?: unknown; action?: unknown; amount?: unknown; reason?: unknown };
   const id = typeof body.depositId === 'string' ? body.depositId : '';
   const action = body.action;
+  const amount = typeof body.amount === 'string' ? body.amount.trim() : '';
   const reason = typeof body.reason === 'string' ? body.reason.trim() : '';
   if (!/^[0-9a-f-]{36}$/i.test(id)) return json({ error: 'Invalid deposit ID.' }, 400);
   if (action !== 'approve' && action !== 'reject') return json({ error: 'Unsupported review action.' }, 400);
-  if (action === 'approve') return json({ error: 'Manual approval is disabled. Only automated on-chain verification can credit a deposit.' }, 409);
+  if (action === 'approve' && (!/^(?:0|[1-9][0-9]{0,17})(?:[.][0-9]{1,6})?$/.test(amount) || Number(amount) < MIN_USDT_DEPOSIT)) {
+    return json({ error: 'Enter the verified amount received (at least 500 USDT), with at most six decimal places.' }, 400);
+  }
   if (action === 'reject' && (reason.length < 5 || reason.length > 500)) {
     return json({ error: 'Provide a rejection reason between 5 and 500 characters.' }, 400);
   }
@@ -45,9 +47,9 @@ export async function POST(request: Request) {
   const { data, error } = await admin.rpc('review_deposit', {
     p_deposit_id: id,
     p_actor_id: actor.id,
-    p_action: 'rejected',
-    p_amount: null,
-    p_reason: reason,
+    p_action: action === 'approve' ? 'approved' : 'rejected',
+    p_amount: action === 'approve' ? Number(amount) : undefined,
+    p_reason: action === 'reject' ? (reason ?? undefined) : undefined,
   });
   if (error) {
     console.error('Admin deposit review transaction failed:', error.code);

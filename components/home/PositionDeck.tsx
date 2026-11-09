@@ -7,8 +7,9 @@ import Link from 'next/link';
 import { growth } from '@/lib/finance';
 import { longDate, pct, usd } from '@/lib/format';
 import type { PortfolioPosition } from '@/lib/data';
+import type { Currency } from '@/lib/fx';
 
-export function PositionDeck({ positions, variant = 'compact' }: { positions: PortfolioPosition[]; variant?: 'compact' | 'full' }) {
+export function PositionDeck({ positions, variant = 'compact', currency = 'USD' }: { positions: PortfolioPosition[]; variant?: 'compact' | 'full'; currency?: Currency }) {
   const [viewportRef, embla] = useEmblaCarousel({ align: 'start', containScroll: 'trimSnaps' });
   const [selected, setSelected] = useState(0);
   const onSelect = useCallback(() => setSelected(embla?.selectedScrollSnap() ?? 0), [embla]);
@@ -35,13 +36,13 @@ export function PositionDeck({ positions, variant = 'compact' }: { positions: Po
                 <span className={'rounded-full px-3 py-1 text-xs font-semibold ' + (full ? 'bg-black/10' : 'bg-card2')}>{position.daysLeft} days left</span>
               </div>
               <div className="mt-5 flex items-end justify-between gap-3">
-                <div><p className={'text-xs ' + (full ? 'text-accent-on/70' : 'text-muted')}>{full ? 'BALANCE TODAY' : 'CURRENT VALUE'}</p><p className="mt-1 text-[27px] font-semibold tracking-tight money">{usd(position.value, 2)}</p></div>
-                <div className="text-right"><p className={'text-xs ' + (full ? 'text-accent-on/70' : 'text-muted')}>EARNED</p><p className="mt-1 font-semibold money">{usd(position.earned, 2)}</p></div>
+                <div><p className={'text-xs ' + (full ? 'text-accent-on/70' : 'text-muted')}>{full ? 'BALANCE TODAY' : 'CURRENT VALUE'}</p><p className="mt-1 text-[27px] font-semibold tracking-tight money">{usd(position.value, 2, currency)}</p></div>
+                <div className="text-right"><p className={'text-xs ' + (full ? 'text-accent-on/70' : 'text-muted')}>EARNED</p><p className="mt-1 font-semibold money">{usd(position.earned, 2, currency)}</p></div>
               </div>
               {!full && <>
                 <div className="mt-5 h-1.5 overflow-hidden rounded-full bg-card2"><div className="h-full rounded-full bg-accent" style={{ width: progress + '%' }} /></div>
                 <div className="mt-2 flex justify-between text-[10px] text-muted"><span>Started {longDate(position.startedOn)}</span><span>{pct(progress / 100, 0)} complete</span></div>
-                <div className="mt-4 flex justify-between border-t border-line pt-3 text-xs"><span className="text-muted">Maturity value</span><strong className="money">{usd(projected, 2)}</strong></div>
+                <div className="mt-4 flex justify-between border-t border-line pt-3 text-xs"><span className="text-muted">Maturity value</span><strong className="money">{usd(projected, 2, currency)}</strong></div>
               </>}
               {full && <div className="mt-5 grid grid-cols-2 gap-3 border-t border-accent-on/20 pt-3 text-xs">
                 <div><span className="block text-accent-on/70">POSITION ID</span><strong className="mt-1 block font-mono">{position.id.slice(0, 8).toUpperCase()}</strong></div>

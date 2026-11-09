@@ -10,8 +10,9 @@ import { Card } from '@/components/ui/Card';
 export const dynamic = 'force-dynamic';
 
 export default async function TodayPage() {
-  await requireUser();
-  const portfolio = await getPortfolio();
+  const { supabase, user } = await requireUser();
+  const [{ data: profile }, portfolio] = await Promise.all([supabase.from('profiles').select('currency').eq('id', user.id).maybeSingle(), getPortfolio()]);
+  const currency = profile?.currency === 'KES' ? 'KES' : 'USD';
   if (!portfolio.positions.length) return <div className="space-y-5"><TopBar title="Today" backHref="/home"/><EmptySavings/></div>;
   const now = new Date();
   const seconds = now.getUTCHours() * 3600 + now.getUTCMinutes() * 60 + now.getUTCSeconds();
@@ -23,7 +24,7 @@ export default async function TodayPage() {
     <TopBar title="Today" backHref="/home"/>
     <Card className="flex items-center gap-5 p-5">
       <Ring value={fraction * 100} label={Math.round(fraction * 100) + '%'} size={112}/>
-      <div className="min-w-0"><p className="label">ACCRUED SO FAR</p><p className="mt-1 text-2xl font-semibold money">{usd(accrued, 2)}</p><p className="mt-2 text-xs leading-5 text-muted">Estimated from today&apos;s credited profit as the UTC day progresses.</p><p className="mt-2 text-[10px] font-semibold uppercase tracking-wider text-accent">Credited at 00:00 UTC</p></div>
+      <div className="min-w-0"><p className="label">ACCRUED SO FAR</p><p className="mt-1 text-2xl font-semibold money">{usd(accrued, 2, currency)}</p><p className="mt-2 text-xs leading-5 text-muted">Estimated from today&apos;s credited profit as the UTC day progresses.</p><p className="mt-2 text-[10px] font-semibold uppercase tracking-wider text-accent">Credited at 00:00 UTC</p></div>
     </Card>
     <section className="space-y-3">
       <div><h2 className="text-base font-semibold">Profit by property</h2><p className="mt-1 text-xs text-muted">Daily portfolio profit allocated by each property&apos;s target return.</p></div>

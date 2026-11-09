@@ -5,10 +5,12 @@ import { TopBar } from '@/components/app/TopBar';
 import { Card } from '@/components/ui/Card';
 import { Chip } from '@/components/ui/Chip';
 import { formatCurrency } from '@/lib/fx';
+import { useWalletCurrency } from '@/components/wallet/useWalletCurrency';
 
 type Tx = { id: string; kind: string; amount: number; method: string | null; created_at: string };
 
 export default function TransactionsPage() {
+  const currency = useWalletCurrency();
   const [filter, setFilter] = useState('all');
   const [rows, setRows] = useState<Tx[]>([]);
   const [cursor, setCursor] = useState<string | null>(null);
@@ -71,7 +73,7 @@ export default function TransactionsPage() {
                   <span className="text-xs text-muted">{transaction.method || 'Firn wallet'}</span>
                 </span>
                 <strong className={transaction.amount < 0 ? 'text-neg' : 'text-pos'}>
-                  {transaction.amount < 0 ? '−' : '+'}{formatCurrency(Math.abs(transaction.amount))}
+                  {transaction.amount < 0 ? '−' : '+'}{formatCurrency(Math.abs(transaction.amount), currency)}
                 </strong>
               </div>
             ))}

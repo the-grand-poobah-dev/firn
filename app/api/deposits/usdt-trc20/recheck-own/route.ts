@@ -8,6 +8,9 @@ export const dynamic = 'force-dynamic';
 export const maxDuration = 30;
 const json = (body: unknown, status = 200) => NextResponse.json(body, { status, headers: { 'Cache-Control': 'no-store' } });
 export async function POST(request: Request) {
+  if ((process.env.USDT_DEPOSITS_ENABLED ?? 'false').trim().toLowerCase() !== 'true') {
+    return json({ error: 'USDT deposits are temporarily unavailable.' }, 503);
+  }
   const session = await createClient();
   const { data: { user } } = await session.auth.getUser();
   if (!user) return json({ error: 'Authentication required.' }, 401);
@@ -22,14 +25,14 @@ export async function POST(request: Request) {
   const { data: allowed, error: limitError } = await admin.rpc('consume_deposit_rate_limit', { p_user_id: user.id });
   if (limitError) return json({ error: 'Recheck is temporarily unavailable.' }, 503);
   if (!allowed) return json({ error: 'Too many attempts. Try again later.' }, 429);
-  const { data: deposit } = await session.from('deposits').select('id,txid,status,receiving_address').eq('id', id).eq('user_id', user.id).maybeSingle();
+  const { data: deposit } = await session.from('deposits').select('id,txid,status,to_address').eq('id', id).eq('user_id', user.id).maybeSingle();
   if (!deposit || !['pending_verification','needs_review'].includes(deposit.status)) return json({ error: 'This deposit is not eligible for rechecking.' }, 404);
   try {
-    const result = await verifyTronUsdtTransfer(deposit.txid, deposit.receiving_address);
+    const result = await verifyTronUsdtTransfer(deposit.txid, deposit.to_address);
     if (result.state === 'verified') {
       const { error } = await admin.rpc('confirm_and_credit_deposit', {
         p_deposit_id: id,
-        p_verified_amount: result.amount,
+        p_verified_amount: Number(result.amount),
         p_from_address: result.fromAddress,
         p_to_address: result.toAddress,
         p_block_timestamp: result.blockTimestamp,

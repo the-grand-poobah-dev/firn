@@ -4,9 +4,9 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Card } from '@/components/ui/Card';
 import { Icon } from '@/components/ui/Icon';
 
-type Category = 'earnings' | 'properties' | 'account';
+type Category = 'earnings' | 'properties' | 'deposits' | 'withdrawals' | 'admin' | 'account';
 type Notice = { id: string; title: string; body: string | null; read: boolean | null; created_at: string | null; category: Category };
-const filters = [{label:'All',value:'all'},{label:'Earnings',value:'earnings'},{label:'Properties',value:'properties'},{label:'Account',value:'account'}] as const;
+const filters = [{label:'All',value:'all'},{label:'Deposits',value:'deposits'},{label:'Withdrawals',value:'withdrawals'},{label:'Admin',value:'admin'},{label:'Earnings',value:'earnings'},{label:'Properties',value:'properties'},{label:'Account',value:'account'}] as const;
 
 export function NotificationsList() {
   const [items,setItems] = useState<Notice[]>([]);
