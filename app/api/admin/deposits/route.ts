@@ -36,7 +36,7 @@ export async function POST(request: Request) {
   const reason = typeof body.reason === 'string' ? body.reason.trim() : '';
   if (!/^[0-9a-f-]{36}$/i.test(id)) return json({ error: 'Invalid deposit ID.' }, 400);
   if (action !== 'approve' && action !== 'reject') return json({ error: 'Unsupported review action.' }, 400);
-  if (action === 'approve' && (!/^(?:0|[1-9]\\d{0,17})(?:\\.\\d{1,6})?$/.test(amount) || Number(amount) <= 0)) {
+  if (action === 'approve' && (!/^(?:0|[1-9]\d{0,17})(?:\.\d{1,6})?$/.test(amount) || Number(amount) <= 0)) {
     return json({ error: 'Enter a positive amount with at most six decimal places.' }, 400);
   }
   if (action === 'reject' && (reason.length < 5 || reason.length > 500)) {
