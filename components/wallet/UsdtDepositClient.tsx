@@ -141,7 +141,7 @@ export function UsdtDepositClient({ address, minimumDeposit, initialDeposits, in
       <header>
         <p className="label">FUND YOUR FIRN WALLET</p>
         <h1 className="mt-2 text-2xl font-semibold">Deposit USDT (TRC20)</h1>
-        <p className="mt-2 text-sm text-muted">Send Tether using the TRON network only. Every deposit is checked manually before your FIRN wallet is credited. Every deposit is checked manually before your FIRN wallet is credited.</p>
+        <p className="mt-2 text-sm text-muted">Send Tether using the TRON network only. Every deposit is checked manually before your FIRN wallet is credited.</p>
       </header>
 
       <Card>
