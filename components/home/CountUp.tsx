@@ -2,8 +2,10 @@
 
 import { useEffect, useState } from 'react';
 import { useReducedMotion } from 'framer-motion';
+import { usd } from '@/lib/format';
+import type { Currency } from '@/lib/fx';
 
-export function CountUp({ value, format = (n: number) => n.toLocaleString('en-US') }: { value: number; format?: (value: number) => string }) {
+export function CountUp({ value, currency = 'USD', decimals = 0 }: { value: number; currency?: Currency; decimals?: number }) {
   const reduceMotion = useReducedMotion();
   const [display, setDisplay] = useState(reduceMotion ? value : 0);
   useEffect(() => {
@@ -19,5 +21,5 @@ export function CountUp({ value, format = (n: number) => n.toLocaleString('en-US
     frame = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(frame);
   }, [value, reduceMotion]);
-  return <span className="tabular">{format(display)}</span>;
+  return <span className="tabular">{usd(display, decimals, currency)}</span>;
 }
