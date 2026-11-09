@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
+import type { Json } from '@/lib/database.types';
 
 export const dynamic = 'force-dynamic';
 const json = (data: unknown, status = 200) => NextResponse.json(data, { status, headers: { 'Cache-Control': 'no-store' } });
@@ -80,7 +81,7 @@ export async function POST(request: Request) {
   }
   const { error } = await admin.from('profiles').update({
     kyc_status: action === 'approve' ? 'verified' : 'pending',
-    prefs: nextPrefs,
+    prefs: nextPrefs as Json,
   }).eq('id', userId).eq('kyc_status', 'in_review');
   if (error) {
     console.error('Admin KYC decision failed:', error.code);
