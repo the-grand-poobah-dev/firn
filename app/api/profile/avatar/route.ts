@@ -4,7 +4,7 @@ import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 
 export const dynamic = 'force-dynamic';
-const MAX_BYTES = 3 * 1024 * 1024;
+const MAX_BYTES = 10 * 1024 * 1024;
 const MIME_EXT: Record<string, string> = {
   'image/jpeg': 'jpg',
   'image/png': 'png',
@@ -30,7 +30,7 @@ export async function POST(request: Request) {
   const file = form.get('file');
   if (!(file instanceof File)) return NextResponse.json({ error: 'Choose an image file.' }, { status: 400 });
   if (!MIME_EXT[file.type] || file.size <= 0 || file.size > MAX_BYTES) {
-    return NextResponse.json({ error: 'Use a JPG, PNG, WebP or AVIF image up to 3 MB.' }, { status: 400 });
+    return NextResponse.json({ error: 'Use a JPG, PNG, WebP or AVIF image up to 10 MB.' }, { status: 400 });
   }
   const bytes = new Uint8Array(await file.arrayBuffer());
   if (!validImageSignature(bytes, file.type)) return NextResponse.json({ error: 'The selected file is not a valid image.' }, { status: 400 });
