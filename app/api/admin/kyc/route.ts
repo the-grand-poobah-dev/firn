@@ -30,7 +30,7 @@ export async function GET() {
   const applicants = await Promise.all((data ?? []).map(async row => {
     const prefs = (row.prefs ?? {}) as Record<string, unknown>;
     const path = typeof prefs.kyc_document_path === 'string' && prefs.kyc_document_path.startsWith(row.id + '/') ? prefs.kyc_document_path : null;
-    const signed = path ? await admin.storage.from('kyc-documents').createSignedUrl(path, 600) : { data: null, error: new Error('No document') };
+    const signed = path ? await admin.storage.from('kyc-documents').createSignedUrl(path, 3600) : { data: null, error: new Error('No document') };
     return {
       id: row.id,
       full_name: row.full_name,
