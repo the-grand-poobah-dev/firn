@@ -11,8 +11,8 @@ const TRON_ADDRESS_PATTERN = /^T[1-9A-HJ-NP-Za-km-z]{33}$/;
 export default function DepositPage({ searchParams }: { searchParams: { returnTo?: string; method?: string } }) {
   const returnTo = searchParams.returnTo?.startsWith('/save/') ? searchParams.returnTo : '/wallet';
   const configuredAddress = process.env.DEPOSIT_USDT_TRC20_ADDRESS?.trim() ?? '';
-  const usdtEnabled = (process.env.USDT_DEPOSITS_ENABLED ?? 'false').trim().toLowerCase() === 'true'
-    && TRON_ADDRESS_PATTERN.test(configuredAddress);
+  // Enable the setup screen when a valid receiving wallet exists. All claims remain manual-review only.
+  const usdtEnabled = TRON_ADDRESS_PATTERN.test(configuredAddress);
 
   return (
     <div className="space-y-5">
