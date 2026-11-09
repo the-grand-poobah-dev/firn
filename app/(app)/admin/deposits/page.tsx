@@ -9,5 +9,5 @@ export default async function AdminDepositsPage() {
   const { supabase, user } = await requireUser();
   const { data } = await supabase.from('profiles').select('is_admin').eq('id', user.id).maybeSingle();
   if (data?.is_admin !== true) redirect('/home');
-  return <div className="space-y-5"><TopBar title="Deposit review" /><Link href="/admin/kyc" className="inline-flex text-sm text-accent underline">Review identity checks →</Link><AdminDepositsClient /></div>;
+  return <div className="space-y-5"><TopBar title="Deposit review" /><Link href="/admin/kyc" className="inline-flex text-sm text-accent underline">Review identity checks →</Link><Link href="/admin/withdrawals" className="inline-flex text-sm text-accent underline">Review withdrawals →</Link><AdminDepositsClient /></div>;
 }
