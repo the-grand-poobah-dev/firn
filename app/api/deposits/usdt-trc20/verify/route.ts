@@ -10,6 +10,9 @@ const AMOUNT = /^(?:0|[1-9]\d{0,17})(?:\.\d{1,6})?$/;
 const response = (body: unknown, status = 200) => NextResponse.json(body, { status, headers: { 'Cache-Control': 'no-store' } });
 
 export async function POST(request: Request) {
+  if ((process.env.USDT_DEPOSITS_ENABLED ?? 'false').trim().toLowerCase() !== 'true') {
+    return response({ error: 'USDT deposits are temporarily unavailable.' }, 503);
+  }
   const session = await createClient();
   const { data: { user } } = await session.auth.getUser();
   if (!user) return response({ error: 'Authentication required.' }, 401);

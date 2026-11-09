@@ -5,6 +5,9 @@ import { verifyTronUsdtTransfer } from '@/lib/deposits/tron';
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
 export async function POST(request: Request) {
+  if ((process.env.USDT_DEPOSITS_ENABLED ?? 'false').trim().toLowerCase() !== 'true') {
+    return NextResponse.json({ error: 'USDT deposits are temporarily unavailable.' }, { status: 503 });
+  }
   const secret = process.env.CRON_SECRET;
   if (!secret || request.headers.get('authorization') !== `Bearer ${secret}`) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   const admin = createAdminClient();
