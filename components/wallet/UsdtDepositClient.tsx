@@ -35,9 +35,9 @@ const TXID_PATTERN = /^[a-fA-F0-9]{64}$/;
 function statusText(status: DepositStatus) {
   const labels: Record<DepositStatus, string> = {
     awaiting_payment: 'Awaiting payment',
-    pending_verification: 'Pending verification',
+    pending_verification: 'Pending manual review',
     confirmed: 'Confirmed',
-    needs_review: 'Needs review',
+    needs_review: 'Pending manual review',
     rejected: 'Rejected',
     expired: 'Expired',
   };
@@ -60,7 +60,6 @@ export function UsdtDepositClient({ address, minimumDeposit, initialDeposits, in
   const [deposits, setDeposits] = useState(initialDeposits);
   const [statusError, setStatusError] = useState(initialStatusError);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
-  const [rechecking, setRechecking] = useState('');
 
   const refreshDeposits = useCallback(async () => {
     try {
@@ -83,21 +82,6 @@ export function UsdtDepositClient({ address, minimumDeposit, initialDeposits, in
     return () => window.clearInterval(timer);
   }, [refreshDeposits]);
 
-  async function recheckDeposit(depositId: string) {
-    setRechecking(depositId);
-    setFormMessage('');
-    try {
-      const response = await fetch('/api/deposits/usdt-trc20/recheck-own', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ depositId }),
-      });
-      const payload = await response.json();
-      setFormMessage(payload.message || payload.error || 'Deposit recheck finished.');
-      await refreshDeposits();
-    } catch {
-      setFormMessage('Could not recheck this deposit. Please try again.');
-    } finally { setRechecking(''); }
-  }
 
   async function copyAddress() {
     if (!address) return;
@@ -141,7 +125,7 @@ export function UsdtDepositClient({ address, minimumDeposit, initialDeposits, in
       }
       setTxid('');
       setAmount('');
-      setFormMessage(payload.status === 'confirmed' ? 'Transfer verified and wallet credited.' : 'Transaction recorded for verification or manual review. Your wallet has not been credited yet.');
+      setFormMessage('Transaction submitted for manual verification. Your FIRN wallet has not been credited yet.');
       await refreshDeposits();
     } catch {
       setFormMessage('Network error while submitting. Please try again.');
@@ -156,7 +140,7 @@ export function UsdtDepositClient({ address, minimumDeposit, initialDeposits, in
       <header>
         <p className="label">FUND YOUR FIRN WALLET</p>
         <h1 className="mt-2 text-2xl font-semibold">Deposit USDT (TRC20)</h1>
-        <p className="mt-2 text-sm text-muted">Send Tether using the TRON network only.</p>
+        <p className="mt-2 text-sm text-muted">Send Tether using the TRON network only. Every deposit is checked manually before your FIRN wallet is credited.</p>
       </header>
 
       <Card>
@@ -216,7 +200,7 @@ export function UsdtDepositClient({ address, minimumDeposit, initialDeposits, in
       {address && <Card>
         <div>
           <h2 className="text-sm font-semibold">I have sent my USDT</h2>
-          <p className="mt-1 text-xs leading-5 text-muted">Submit the on-chain transaction ID and amount you sent. This records your claim for verification; it does not itself confirm the transfer or credit your wallet.</p>
+          <p className="mt-1 text-xs leading-5 text-muted">Submit your transaction ID and amount. This creates a pending claim only. FIRN will check the confirmed transfer on TRON and manually approve the actual received amount before crediting your wallet.</p>
         </div>
         <form className="mt-4 space-y-3" onSubmit={submitClaim}>
           <label className="block text-xs font-semibold" htmlFor="deposit-txid">Transaction ID (TXID)</label>
@@ -245,7 +229,7 @@ export function UsdtDepositClient({ address, minimumDeposit, initialDeposits, in
                 <p className="mt-2 text-[10px] text-muted">Submitted {new Date(deposit.created_at).toLocaleString()}</p>
                 {deposit.verified_amount !== null && <p className="mt-1 text-xs text-muted">Verified amount: {deposit.verified_amount} USDT</p>}
                 {deposit.failure_reason && <p className="mt-2 text-xs text-neg">{deposit.failure_reason}</p>}
-                {(deposit.status === 'pending_verification' || deposit.status === 'needs_review') && <Button type="button" variant="ghost" className="mt-2 min-h-9 px-3 text-xs" disabled={rechecking === deposit.id} onClick={() => void recheckDeposit(deposit.id)}>{rechecking === deposit.id ? 'Rechecking…' : 'Recheck transaction'}</Button>}
+                
               </div>
             ))}
           </div>
