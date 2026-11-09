@@ -35,9 +35,15 @@ export function PositionDeck({ positions, variant = 'compact', currency = 'USD' 
                 <div><p className={'text-xs font-medium ' + (full ? 'text-accent-on/70' : 'text-muted')}>FIXED INVESTMENT</p><h3 className="mt-1 text-lg font-semibold">{position.plan === 'six' ? 'Firn Six' : 'Firn Twelve'}</h3></div>
                 <span className={'rounded-full px-3 py-1 text-xs font-semibold ' + (full ? 'bg-black/10' : 'bg-card2')}>{position.daysLeft} days left</span>
               </div>
-              <div className="mt-5 grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-end gap-2">
-                <div className="min-w-0"><p className={'text-xs ' + (full ? 'text-accent-on/70' : 'text-muted')}>{full ? 'BALANCE TODAY' : 'CURRENT VALUE'}</p><p className="mt-1 whitespace-nowrap text-[clamp(1rem,4.8vw,1.65rem)] font-semibold leading-tight tracking-tight money">{usd(position.value, 2, currency)}</p></div>
-                <div className="min-w-0 text-right"><p className={'text-xs ' + (full ? 'text-accent-on/70' : 'text-muted')}>EARNED</p><p className="mt-1 whitespace-nowrap text-xs font-semibold money">{usd(position.earned, 2, currency)}</p></div>
+              <div className="mt-5 flex min-w-0 flex-col gap-3">
+                <div className="min-w-0">
+                  <p className={'text-xs ' + (full ? 'text-accent-on/70' : 'text-muted')}>{full ? 'BALANCE TODAY' : 'CURRENT VALUE'}</p>
+                  <p className="mt-1 max-w-full whitespace-normal [overflow-wrap:anywhere] text-[clamp(1rem,5vw,1.65rem)] font-semibold leading-tight tracking-tight tabular-nums money">{usd(position.value, 2, currency)}</p>
+                </div>
+                <div className="flex min-w-0 flex-wrap items-baseline justify-end gap-x-2 gap-y-1 text-right">
+                  <span className={'text-xs ' + (full ? 'text-accent-on/70' : 'text-muted')}>EARNED</span>
+                  <span className="max-w-full whitespace-normal [overflow-wrap:anywhere] text-xs font-semibold tabular-nums money">{usd(position.earned, 2, currency)}</span>
+                </div>
               </div>
               {!full && <>
                 <div className="mt-5 h-1.5 overflow-hidden rounded-full bg-card2"><div className="h-full rounded-full bg-accent" style={{ width: progress + '%' }} /></div>
