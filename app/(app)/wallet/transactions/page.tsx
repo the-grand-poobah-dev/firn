@@ -6,6 +6,7 @@ import { Card } from '@/components/ui/Card';
 import { Chip } from '@/components/ui/Chip';
 import { formatCurrency } from '@/lib/fx';
 import { useWalletCurrency } from '@/components/wallet/useWalletCurrency';
+import { formatWalletMethod } from '@/lib/wallet-display';
 
 type Tx = { id: string; kind: string; amount: number; method: string | null; created_at: string };
 
@@ -70,7 +71,7 @@ export default function TransactionsPage() {
               <div key={transaction.id} className="flex items-center gap-3 p-4">
                 <span className="min-w-0 flex-1">
                   <span className="block text-sm font-semibold capitalize">{transaction.kind}</span>
-                  <span className="text-xs text-muted">{transaction.method || 'Firn wallet'}</span>
+                  <span className="text-xs text-muted">{formatWalletMethod(transaction.method)}</span>
                 </span>
                 <strong className={transaction.amount < 0 ? 'text-neg' : 'text-pos'}>
                   {transaction.amount < 0 ? '−' : '+'}{formatCurrency(Math.abs(transaction.amount), currency)}
