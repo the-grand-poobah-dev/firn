@@ -30,7 +30,7 @@ export function AdminDepositsClient() {
     finally { setBusy(''); }
   }
   return <div className="space-y-4">
-    <div className="flex items-center justify-between"><p className="text-sm text-muted">Pending manual verification — check the transaction on TronScan before approving</p><Button variant="ghost" onClick={() => void load()}>Refresh</Button></div>
+    <div className="flex items-center justify-between"><p className="text-sm text-muted">Pending manual verification — confirm successful USDT TRC20 transfer, exact amount and FIRN receiving address on TronScan before approving</p><Button variant="ghost" onClick={() => void load()}>Refresh</Button></div>
     {error && <p role="alert" className="rounded-xl border border-neg/40 p-3 text-sm text-neg">{error}</p>}
     {!rows.length ? <Card><p className="text-sm text-muted">No deposits currently need review.</p></Card> : rows.map(row => <Card key={row.id} className="space-y-3">
       <div className="flex flex-wrap items-center justify-between gap-2"><strong className="text-sm">{row.user_label}</strong><span className="rounded-full border border-line px-2 py-1 text-xs">{row.status}</span></div>
@@ -38,7 +38,7 @@ export function AdminDepositsClient() {
       <div><p className="text-xs text-muted">TXID</p><code className="break-all text-xs">{row.txid}</code><a className="mt-1 inline-block text-xs text-accent underline" href={`https://tronscan.org/#/transaction/${row.txid}`} target="_blank" rel="noreferrer">Verify transaction on TronScan</a></div>
       <p className="text-xs text-muted">Failure reason: {row.failure_reason ?? 'None recorded'}</p>
       <label className="block text-xs font-semibold">Amount to approve (USDT)
-        <input value={amounts[row.id] ?? ''} onChange={e=>setAmounts(v=>({...v,[row.id]:e.target.value}))} type="number" min="500" step="0.000001" inputMode="decimal" className="mt-1 min-h-11 w-full rounded-xl border border-line bg-card2 px-3 text-sm" placeholder="500.000000 or more" />
+        <input value={amounts[row.id] ?? ''} onChange={e=>setAmounts(v=>({...v,[row.id]:e.target.value}))} type="number" min="10" step="0.000001" inputMode="decimal" className="mt-1 min-h-11 w-full rounded-xl border border-line bg-card2 px-3 text-sm" placeholder="10.000000 or more" />
       </label>
       <Button className="w-full" disabled={busy===row.id || !amounts[row.id]} onClick={()=>void act(row.id,'approve')}>{busy===row.id?'Processing…':'Approve and credit'}</Button>
       <label className="block text-xs font-semibold">Rejection reason
