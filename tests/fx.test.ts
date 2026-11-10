@@ -13,8 +13,9 @@ describe('FIRN display currency and USDT deposit rules', () => {
     expect(usdtToKes(500)).toBe(67500);
   });
 
-  it('enforces a minimum deposit of 500 USDT and only supports USD/KES display', () => {
-    expect(MIN_USDT_DEPOSIT).toBe(500);
+  it('allows manually verified deposits from 10 USDT and only supports USD/KES display', () => {
+    expect(MIN_USDT_DEPOSIT).toBe(10);
+    expect(124.14).toBeGreaterThanOrEqual(MIN_USDT_DEPOSIT);
     expect(isCurrency('USD')).toBe(true);
     expect(isCurrency('KES')).toBe(true);
     expect(isCurrency('EUR')).toBe(false);

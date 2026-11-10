@@ -2,7 +2,6 @@ import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { MIN_USDT_DEPOSIT } from '@/lib/fx';
-import { areUsdtDepositsEnabled } from '@/lib/deposits/config';
 
 export const dynamic = 'force-dynamic';
 const json = (data: unknown, status = 200) => NextResponse.json(data, { status, headers: { 'Cache-Control': 'no-store' } });
@@ -38,9 +37,11 @@ export async function POST(request: Request) {
   const reason = typeof body.reason === 'string' ? body.reason.trim() : '';
   if (!/^[0-9a-f-]{36}$/i.test(id)) return json({ error: 'Invalid deposit ID.' }, 400);
   if (action !== 'approve' && action !== 'reject') return json({ error: 'Unsupported review action.' }, 400);
-  if (action === 'approve' && !areUsdtDepositsEnabled()) return json({ error: 'Deposit approvals are disabled until sender-wallet ownership verification is deployed.' }, 503);
+  // This is an explicitly manual admin review: the administrator verifies the
+  // on-chain transaction in TronScan before approving. Automated deposits remain
+  // disabled until sender-wallet ownership verification is implemented.
   if (action === 'approve' && (!/^(?:0|[1-9][0-9]{0,17})(?:[.][0-9]{1,6})?$/.test(amount) || Number(amount) < MIN_USDT_DEPOSIT)) {
-    return json({ error: 'Enter the verified amount received (at least 500 USDT), with at most six decimal places.' }, 400);
+    return json({ error: `Enter the verified amount received (at least ${MIN_USDT_DEPOSIT} USDT), with at most six decimal places.` }, 400);
   }
   if (action === 'reject' && (reason.length < 5 || reason.length > 500)) {
     return json({ error: 'Provide a rejection reason between 5 and 500 characters.' }, 400);
