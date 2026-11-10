@@ -1,6 +1,7 @@
 export const USD_TO_KES = 135;
 export const USDT_TO_USD = 1;
-export const MIN_USDT_DEPOSIT = 500;
+// Deposit verification supports manually reviewed transfers from 10 USDT upward.
+export const MIN_USDT_DEPOSIT = 10;
 export const FX_RATES={USD:1,KES:USD_TO_KES} as const;
 export type Currency=keyof typeof FX_RATES;
 export function convertFromUsd(n:number,c:Currency){return n*FX_RATES[c];}
